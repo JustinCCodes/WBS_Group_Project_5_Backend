@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import { env } from "@shared/config/env";
 import { errorHandler } from "@shared/middleware/errorHandler.middleware";
+import { requireAuth, isAdmin } from "@shared/middleware/auth.middleware";
 import authRouter from "./routes/auth.routes";
 
 const authApp: Express = express();
@@ -19,8 +20,8 @@ authApp.get("/", (req: Request, res: Response) => {
   res.json({ message: "Welcome to the Authentication Server!" });
 });
 
-// Health Check Endpoint
-authApp.get("/health", (req: Request, res: Response) => {
+// Health Check Endpoint (Admin)
+authApp.get("/health", requireAuth, isAdmin, (req: Request, res: Response) => {
   const dbStatus =
     mongoose.connection.readyState === 1 ? "connected" : "disconnected";
 

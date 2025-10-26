@@ -2,15 +2,15 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
-import { env } from "./shared/config/env";
-import { errorHandler } from "./shared/middleware/errorHandler.middleware";
+import { env } from "@shared/config/env";
+import { errorHandler } from "@shared/middleware/errorHandler.middleware";
 import {
   userRouter,
   categoryRouter,
   productRouter,
   orderRouter,
   adminRouter,
-} from "./api-server/routes";
+} from "./routes";
 
 const app: Express = express();
 
@@ -54,7 +54,6 @@ app.get("/health", (req: Request, res: Response) => {
 // API ROUTES
 const apiBasePath = "/api/v1";
 
-// Note: Auth routes are now on separate auth server (port 8001)
 app.use(`${apiBasePath}/users`, userRouter);
 app.use(`${apiBasePath}/categories`, categoryRouter);
 app.use(`${apiBasePath}/products`, productRouter);

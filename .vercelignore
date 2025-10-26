@@ -1,0 +1,27 @@
+# Don't upload source files (only need compiled dist/)
+
+src/
+tsconfig.json
+
+# Don't upload development files
+
+node_modules/
+.git/
+.vscode/
+.idea/
+\*.log
+
+# Don't upload environment files
+
+.env\*
+!.env.example
+
+# Don't upload documentation
+
+readme.md
+\*.md
+
+# Don't upload OS files
+
+.DS_Store
+Thumbs.db

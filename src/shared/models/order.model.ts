@@ -14,7 +14,7 @@ export interface IOrder extends Document {
   status: "pending" | "processing" | "shipped" | "cancelled";
 }
 
-// 2. Schema
+// Schema
 const orderSchema = new Schema<IOrder>(
   {
     userId: {
@@ -66,6 +66,11 @@ const orderSchema = new Schema<IOrder>(
     },
   }
 );
+
+// Indexes for performance
+orderSchema.index({ userId: 1, createdAt: -1 }); // Compound index for users orders sorted by date
+orderSchema.index({ status: 1 }); // Index for filtering by status
+orderSchema.index({ "products.productId": 1 }); // Index for checking product usage
 
 // Model
 const Order = model<IOrder>("Order", orderSchema);

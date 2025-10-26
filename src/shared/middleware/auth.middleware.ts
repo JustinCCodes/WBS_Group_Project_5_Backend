@@ -1,0 +1,85 @@
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { env } from "../config/env";
+import { User, IUser } from "../models";
+
+// JWT payload Interface
+interface JwtPayload {
+  userId: string;
+  role: "user" | "admin";
+  iat?: number;
+  exp?: number;
+}
+
+// Extends express request interface to include the user property
+declare global {
+  namespace Express {
+    interface Request {
+      user?: IUser | null;
+    }
+  }
+}
+
+// Verifies JWT Access Token from cookies
+export const requireAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const token = req.cookies?.accessToken;
+
+  if (!token) {
+    return res
+      .status(401)
+      .json({ error: "Authentication required. No token provided." });
+  }
+
+  try {
+    // Verifies token
+    const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+
+    // Finds user based on decoded userId excluding password
+    const user = await User.findById(decoded.userId).select("-password");
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ error: "Authentication failed. User not found." });
+    }
+
+    // Attaches user document to request object
+    req.user = user;
+
+    next(); // Proceeds to next middleware or handler
+  } catch (error) {
+    console.error("JWT Verification Error:", error);
+    if (error instanceof jwt.TokenExpiredError) {
+      return res
+        .status(401)
+        .json({ error: "Authentication failed. Token expired." });
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res
+        .status(401)
+        .json({ error: "Authentication failed. Invalid token." });
+    }
+    // For other errors pass to global error handler
+    return next(error);
+  }
+};
+
+// Middleware to check if the authenticated user is admin
+
+export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Authentication required." });
+  }
+
+  if (req.user.role !== "admin") {
+    return res
+      .status(403)
+      .json({ error: "Forbidden. Admin privileges required." });
+  }
+
+  next(); // User is an admin next
+};

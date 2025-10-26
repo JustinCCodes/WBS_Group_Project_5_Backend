@@ -51,6 +51,11 @@ const productSchema = new Schema<IProduct>(
   }
 );
 
+// Indexes for performance
+productSchema.index({ categoryId: 1 }); // Index for filtering by category
+productSchema.index({ name: "text", description: "text" }); // Text search index
+productSchema.index({ price: 1 }); // Index for price sorting/filtering
+
 // Model
 const Product = model<IProduct>("Product", productSchema);
 export default Product;

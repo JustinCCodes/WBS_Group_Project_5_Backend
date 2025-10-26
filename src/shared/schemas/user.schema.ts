@@ -1,6 +1,15 @@
 import { z } from "zod";
 import { paramsWithIdSchema } from "./common.schema";
 
+// Password validation schema with complexity requirements
+const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters long")
+  .regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+    "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)"
+  );
+
 const userBaseSchema = z.object({
   name: z.string().min(1, "Name is required").trim(),
   email: z.string().email("Invalid email address").toLowerCase().trim(),
@@ -8,18 +17,15 @@ const userBaseSchema = z.object({
 
 export const registerUserSchema = z.object({
   body: userBaseSchema.extend({
-    password: z.string().min(8, "Password must be at least 8 characters long"),
+    password: passwordSchema,
   }),
 });
 
 export const updateUserSchema = z.object({
-  params: paramsWithIdSchema.shape, // Reuse ID param schema
+  params: paramsWithIdSchema.shape, // Reuses ID param schema
   body: userBaseSchema
     .extend({
-      password: z
-        .string()
-        .min(8, "Password must be at least 8 characters long")
-        .optional(),
+      password: passwordSchema.optional(),
       role: z.enum(["user", "admin"]).optional(), // For admin updates
     })
     .partial(), // Makes all fields optional for PUT
@@ -41,4 +47,13 @@ export const adminUpdateUserSchema = z.object({
       role: z.enum(["user", "admin"]), // Allows changing role
     })
     .partial(), // Makes all fields optional
+});
+
+export const updateMeSchema = z.object({
+  body: userBaseSchema
+    .extend({
+      // Only allows password to be optionally updated
+      password: passwordSchema.optional(),
+    })
+    .partial(), // Makes name, email, password optional
 });

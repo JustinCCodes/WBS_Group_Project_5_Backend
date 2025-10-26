@@ -59,7 +59,10 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-// Pre-save hook for password hashing
+// Indexes for performance
+userSchema.index({ email: 1 }); // Index for login queries
+
+// Pre save hook for password hashing
 userSchema.pre("save", async function (next) {
   // Runs if password is modified
   if (!this.isModified("password") || !this.password) {
@@ -76,9 +79,8 @@ userSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
   if (!this.password) {
-    throw new Error(
-      'Password field was not selected. Use .select("+password") in your query.'
-    );
+    // Returns false instead of throwing to prevent information leakage
+    return false;
   }
   return bcrypt.compare(candidatePassword, this.password);
 };

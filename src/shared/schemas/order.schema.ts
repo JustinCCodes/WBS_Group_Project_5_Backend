@@ -22,7 +22,7 @@ export const createOrderSchema = z.object({
 
 export const updateOrderSchema = z.object({
   params: paramsWithIdSchema.shape,
-  body: orderBaseSchema.partial(), // Allow partial updates
+  body: orderBaseSchema.partial(), // Allows partial updates
 });
 
 // Allows admin to change order status
@@ -44,7 +44,7 @@ export const deleteOrderSchema = z.object({
 });
 
 export const getOrdersSchema = z.object({
-  query: paginationQuerySchema.partial(), // Make query params optional
+  query: paginationQuerySchema.partial(), // Makes query params optional
 });
 
 // Schema for admin getting all orders

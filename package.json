@@ -5,9 +5,12 @@
   "scripts": {
     "dev": "nodemon -r tsconfig-paths/register src/api-server/server.ts",
     "dev:auth": "nodemon -r tsconfig-paths/register src/auth-server/server.ts",
+    "dev:all": "concurrently -n \"API,AUTH,FRONTEND\" -c \"cyan,magenta,green\" \"npm run dev\" \"npm run dev:auth\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd ../ecommerce-frontend && npm run dev",
     "build": "tsc",
     "start": "node -r tsconfig-paths/register dist/api-server/server.js",
-    "start:auth": "node -r tsconfig-paths/register dist/auth-server/server.js"
+    "start:auth": "node -r tsconfig-paths/register dist/auth-server/server.js",
+    "start:all": "concurrently -n \"API,AUTH\" -c \"cyan,magenta\" \"npm run start\" \"npm run start:auth\""
   },
   "keywords": [],
   "author": "",
@@ -31,6 +34,7 @@
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.9.1",
+    "concurrently": "^9.2.1",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",

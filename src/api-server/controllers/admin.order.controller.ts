@@ -46,7 +46,7 @@ export const getAllOrders = async (
       .populate("products.productId", "name price") // Populates  product details
       .limit(pagination.limit)
       .skip(pagination.skip)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 }); // Sorts by newest first
 
     const totalOrders = await Order.countDocuments(queryFilter);
 

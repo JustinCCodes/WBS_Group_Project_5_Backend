@@ -47,6 +47,27 @@ export const requireAuth = async (
         .json({ error: "Authentication failed. User not found." });
     }
 
+    // Checks if user is banned
+    if (user.status === "banned") {
+      // Checks if ban has expired
+      if (user.bannedUntil && user.bannedUntil < new Date()) {
+        // Ban has expired reactivate user
+        user.status = "active";
+        user.bannedReason = undefined;
+        user.bannedUntil = undefined;
+        await user.save();
+      } else {
+        // User is still banned
+        const banMessage = user.bannedReason
+          ? `Account is banned. Reason: ${user.bannedReason}`
+          : "Account is banned.";
+        const banUntilMessage = user.bannedUntil
+          ? ` Banned until: ${user.bannedUntil.toISOString()}`
+          : "";
+        return res.status(403).json({ error: banMessage + banUntilMessage });
+      }
+    }
+
     // Attaches user document to request object
     req.user = user;
 

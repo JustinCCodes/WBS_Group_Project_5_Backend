@@ -16,9 +16,12 @@ Both servers share common resources (models, schemas, middleware, database conne
 - **Microservices Architecture**: Separate auth and API servers for scalability and maintainability
 - **Authentication & Authorization**: JWT-based auth with refresh token rotation
 - **User Management**: Registration, profile management, role-based access control (User/Admin)
-- **Product Management**: CRUD operations with category support
+- **User Banning System**: Admins can ban/unban users with reasons and optional expiration dates
+- **Product Management**: CRUD operations with category support and creator tracking
 - **Order Management**: Create and track orders with automatic total calculation
-- **Security**: Rate limiting, input validation, secure cookies, password hashing
+- **Test Orders**: Separate collection for admin testing without affecting production data
+- **Advanced User Search**: Search users by email or ID with pagination
+- **Security**: Rate limiting, input validation, secure cookies, password hashing, banned user checks
 - **Serverless Ready**: Optimized for Vercel with connection pooling and caching
 - **TypeScript**: Fully typed with strict mode enabled
 - **Input Validation**: Zod schemas for all endpoints
@@ -79,7 +82,15 @@ CLOUDINARY_API_SECRET="your_cloudinary_api_secret"
 
 ### 4. Run the development servers
 
-**Important**: Both servers need to run simultaneously for full functionality.
+**Using Concurrently** (Recommended): Both servers run simultaneously in one terminal.
+
+```bash
+npm run dev:all
+```
+
+This will start both the API server (port 8000) and Auth server (port 8001) concurrently.
+
+**Alternative** - Run servers in separate terminals:
 
 ```bash
 # Terminal 1: Run the API server
@@ -156,13 +167,19 @@ Base URL: `http://localhost:8000/api/v1`
 ### Admin
 
 - `GET /api/v1/admin/users` - Get all users
+- `GET /api/v1/admin/users/search?email=&id=` - Search users by email or ID (with pagination)
 - `GET /api/v1/admin/users/:id` - Get user by ID
 - `PUT /api/v1/admin/users/:id` - Update user
+- `PUT /api/v1/admin/users/:id/ban` - Ban user with reason and optional expiration
+- `PUT /api/v1/admin/users/:id/unban` - Unban user
 - `DELETE /api/v1/admin/users/:id` - Delete user
 - `GET /api/v1/admin/orders` - Get all orders (with filters)
 - `GET /api/v1/admin/orders/:id` - Get order by ID
 - `PUT /api/v1/admin/orders/:id` - Update order status
 - `DELETE /api/v1/admin/orders/:id` - Delete order
+- `POST /api/v1/admin/test-orders` - Create test order
+- `GET /api/v1/admin/test-orders` - Get all test orders (with filters)
+- `DELETE /api/v1/admin/test-orders/:id` - Delete test order
 
 ## 🔒 Security Features
 
@@ -170,11 +187,99 @@ Base URL: `http://localhost:8000/api/v1`
   - Login: 5 attempts per 15 minutes
   - Registration: 3 accounts per hour
   - Token refresh: 10 requests per 15 minutes
+- **User Ban System**:
+  - Admins can ban users with reasons
+  - Support for temporary bans with automatic expiration
+  - Banned users are blocked from all authenticated endpoints
+  - All sessions invalidated on ban (refresh tokens deleted)
+  - Admins cannot be banned
 - **Password Requirements**: Min 8 chars, uppercase, lowercase, number, special character
 - **JWT**: Secure token-based authentication with rotation
 - **Cookies**: HttpOnly, Secure (production), SameSite protection
 - **Input Validation**: Zod schema validation on all endpoints
 - **CORS**: Configured with credentials support
+
+### User Ban System
+
+Administrators can ban and unban users with the following features:
+
+**Ban User:**
+
+```bash
+PUT /api/v1/admin/users/:id/ban
+Content-Type: application/json
+
+{
+  "reason": "Violation of terms of service",
+  "bannedUntil": "2025-12-31T23:59:59Z" // Optional - permanent ban if not provided
+}
+```
+
+**Unban User:**
+
+```bash
+PUT /api/v1/admin/users/:id/unban
+```
+
+**Key Features:**
+
+- Banned users cannot access any authenticated endpoints
+- Ban reasons are stored and returned in error messages
+- Temporary bans automatically expire at the specified date
+- All refresh tokens are deleted upon ban (forces logout)
+- Admins cannot ban other admin users
+
+### User Search
+
+Search for users by email or ID with pagination:
+
+```bash
+GET /api/v1/admin/users/search?email=john@example.com&page=1&limit=10
+GET /api/v1/admin/users/search?id=507f1f77bcf86cd799439011
+```
+
+### Test Orders
+
+Separate collection for testing order functionality without affecting production data:
+
+**Create Test Order:**
+
+```bash
+POST /api/v1/admin/test-orders
+Content-Type: application/json
+
+{
+  "userId": "507f1f77bcf86cd799439011",
+  "products": [
+    {
+      "productId": "507f191e810c19729de860ea",
+      "quantity": 2
+    }
+  ],
+  "status": "pending" // Optional: pending, processing, shipped, cancelled
+}
+```
+
+**Get Test Orders:**
+
+```bash
+GET /api/v1/admin/test-orders?page=1&limit=10&status=pending
+```
+
+**Delete Test Order:**
+
+```bash
+DELETE /api/v1/admin/test-orders/:id
+```
+
+### Creator Tracking
+
+Categories and Products track who created them:
+
+- **Category Model**: Added `createdBy` field (reference to User)
+- **Product Model**: Added `createdBy` field (reference to User)
+
+This enables tracking which admin created specific resources for auditing purposes.
 
 ## 🚢 Deployment to Vercel
 
@@ -221,6 +326,7 @@ ecommerce-backend/
 │   │   ├── controllers/            # Business logic controllers
 │   │   │   ├── admin.order.controller.ts
 │   │   │   ├── admin.user.controller.ts
+│   │   │   ├── admin.testOrder.controller.ts
 │   │   │   ├── category.controller.ts
 │   │   │   ├── order.controller.ts
 │   │   │   ├── product.controller.ts
@@ -257,6 +363,7 @@ ecommerce-backend/
 │       │   ├── order.model.ts
 │       │   ├── product.model.ts
 │       │   ├── refreshToken.model.ts
+│       │   ├── testOrder.model.ts
 │       │   └── user.model.ts
 │       ├── schemas/                # Zod validation schemas
 │       │   ├── auth.schema.ts

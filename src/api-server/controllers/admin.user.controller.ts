@@ -19,7 +19,7 @@ export const getAllUsers = async (
       .select("-password") // Exclude password
       .limit(pagination.limit)
       .skip(pagination.skip)
-      .sort({ createdAt: -1 }); // Sort by newest first
+      .sort({ createdAt: -1 }); // Sorts by newest first
 
     const totalUsers = await User.countDocuments();
 
@@ -120,6 +120,124 @@ export const deleteUser = async (
     // Might need to add logic here to handle user orders like canceling or reassigning
 
     res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Ban User
+// PUT /api/v1/admin/users/:id/ban
+export const banUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+  const { reason, bannedUntil } = req.body;
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // Prevents banning admin users
+    if (user.role === "admin") {
+      return res.status(403).json({ error: "Cannot ban admin users." });
+    }
+
+    // Updates user status
+    user.status = "banned";
+    user.bannedReason = reason;
+    if (bannedUntil) {
+      user.bannedUntil = new Date(bannedUntil);
+    }
+
+    await user.save();
+
+    // Deletes all refresh tokens to force logout
+    await RefreshToken.deleteMany({ userId: id });
+
+    res.status(200).json({
+      message: "User has been banned successfully.",
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Unban User
+// PUT /api/v1/admin/users/:id/unban
+export const unbanUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    if (user.status !== "banned") {
+      return res.status(400).json({ error: "User is not banned." });
+    }
+
+    // Updates user status
+    user.status = "active";
+    user.bannedReason = undefined;
+    user.bannedUntil = undefined;
+
+    await user.save();
+
+    res.status(200).json({
+      message: "User has been unbanned successfully.",
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Search Users
+// GET /api/v1/admin/users/search
+export const searchUsers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email, id, page = 1, limit = 10 } = req.query;
+
+  try {
+    const query: any = {};
+
+    // Searches by email (case-insensitive partial match)
+    if (email && typeof email === "string") {
+      query.email = { $regex: email, $options: "i" };
+    }
+
+    // Searches by ID
+    if (id && typeof id === "string" && mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    }
+
+    const pagination = paginate(Number(page), Number(limit));
+
+    const users = await User.find(query)
+      .select("-password")
+      .limit(pagination.limit)
+      .skip(pagination.skip)
+      .sort({ createdAt: -1 });
+
+    const totalUsers = await User.countDocuments(query);
+
+    res.status(200).json({
+      data: users,
+      pagination: pagination.metadata(totalUsers),
+    });
   } catch (error) {
     next(error);
   }

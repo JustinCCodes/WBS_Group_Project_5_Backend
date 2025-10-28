@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { paramsWithIdSchema } from "./common.schema";
+import {
+  paramsWithIdSchema,
+  paginationQuerySchema,
+  objectIdSchema,
+} from "./common.schema";
 
 // Password validation schema with complexity requirements
 const passwordSchema = z
@@ -56,4 +60,28 @@ export const updateMeSchema = z.object({
       password: passwordSchema.optional(),
     })
     .partial(), // Makes name, email, password optional
+});
+
+// Schema for banning a user
+export const banUserSchema = z.object({
+  params: paramsWithIdSchema.shape,
+  body: z.object({
+    reason: z.string().min(1, "Ban reason is required"),
+    bannedUntil: z.coerce.date().optional(), // Coerce string to Date object
+  }),
+});
+
+// Schema for unbanning a user
+export const unbanUserSchema = z.object({
+  params: paramsWithIdSchema.shape,
+});
+
+// Schema for searching users
+export const searchUsersSchema = z.object({
+  query: paginationQuerySchema
+    .extend({
+      email: z.string().optional(),
+      id: objectIdSchema.optional(),
+    })
+    .partial(),
 });

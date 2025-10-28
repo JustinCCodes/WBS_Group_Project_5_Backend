@@ -12,7 +12,7 @@ const startAuthServer = async () => {
     // Starts authentication server
     authApp.listen(AUTH_PORT, () => {
       console.log(
-        `🔐 Authentication Server is running on http://localhost:${AUTH_PORT}`
+        `Authentication Server is running on http://localhost:${AUTH_PORT}`
       );
     });
   } catch (error) {

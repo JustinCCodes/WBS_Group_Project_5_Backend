@@ -22,6 +22,7 @@ const categorySchema = new Schema<ICategory>(
     },
   },
   {
+    timestamps: true,
     toJSON: {
       virtuals: true,
       transform: (doc, ret) => {

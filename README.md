@@ -142,7 +142,7 @@ Base URL: `http://localhost:8000/api/v1`
 
 ### Categories
 
-- `GET /api/v1/categories` - Get all categories
+- `GET /api/v1/categories` - Get all categories (minimal data: name and ID only)
 - `GET /api/v1/categories/:id` - Get category by ID
 - `POST /api/v1/categories` - Create category (Admin only)
 - `PUT /api/v1/categories/:id` - Update category (Admin only)
@@ -166,6 +166,7 @@ Base URL: `http://localhost:8000/api/v1`
 
 ### Admin
 
+- `GET /api/v1/admin/categories` - Get all categories with full metadata (includes creator info)
 - `GET /api/v1/admin/users` - Get all users
 - `GET /api/v1/admin/users/search?email=&id=` - Search users by email or ID (with pagination)
 - `GET /api/v1/admin/users/:id` - Get user by ID
@@ -324,6 +325,7 @@ ecommerce-backend/
 │   │   ├── app.ts                  # API server Express app
 │   │   ├── server.ts               # API server entry point
 │   │   ├── controllers/            # Business logic controllers
+│   │   │   ├── admin.category.controller.ts
 │   │   │   ├── admin.order.controller.ts
 │   │   │   ├── admin.user.controller.ts
 │   │   │   ├── admin.testOrder.controller.ts

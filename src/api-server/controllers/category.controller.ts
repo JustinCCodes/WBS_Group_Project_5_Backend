@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { Category, Product } from "@shared/models";
 import mongoose from "mongoose";
 
-// Get All Categories
+// Get All Categories (Public endpoint - minimal data)
 // GET /api/v1/categories
 export const getAllCategories = async (
   req: Request,
@@ -10,7 +10,9 @@ export const getAllCategories = async (
   next: NextFunction
 ) => {
   try {
-    const categories = await Category.find().sort({ name: 1 }); // Sorts alphabetically
+    const categories = await Category.find()
+      .select("name _id") // Only returns name and ID
+      .sort({ name: 1 });
     res.status(200).json(categories);
   } catch (error) {
     next(error);

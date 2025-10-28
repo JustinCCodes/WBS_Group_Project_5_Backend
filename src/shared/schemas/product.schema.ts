@@ -17,16 +17,16 @@ export const createProductSchema = z.object({
 });
 
 export const updateProductSchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
   body: productBaseSchema.partial(), // Makes all fields optional for PUT/PATCH
 });
 
 export const getProductSchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
 });
 
 export const deleteProductSchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
 });
 
 export const getProductsSchema = z.object({

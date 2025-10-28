@@ -21,13 +21,13 @@ export const createOrderSchema = z.object({
 });
 
 export const updateOrderSchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
   body: orderBaseSchema.partial(), // Allows partial updates
 });
 
 // Allows admin to change order status
 export const adminUpdateOrderSchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
   body: orderBaseSchema
     .extend({
       status: z.enum(["pending", "processing", "shipped", "cancelled"]),
@@ -36,11 +36,11 @@ export const adminUpdateOrderSchema = z.object({
 });
 
 export const getOrderSchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
 });
 
 export const deleteOrderSchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
 });
 
 export const getOrdersSchema = z.object({
@@ -81,5 +81,5 @@ export const getTestOrdersSchema = z.object({
 });
 
 export const deleteTestOrderSchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
 });

@@ -10,14 +10,14 @@ export const createCategorySchema = z.object({
 });
 
 export const updateCategorySchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
   body: categoryBaseSchema,
 });
 
 export const getCategorySchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
 });
 
 export const deleteCategorySchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
 });

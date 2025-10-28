@@ -26,7 +26,7 @@ export const registerUserSchema = z.object({
 });
 
 export const updateUserSchema = z.object({
-  params: paramsWithIdSchema.shape, // Reuses ID param schema
+  params: paramsWithIdSchema,
   body: userBaseSchema
     .extend({
       password: passwordSchema.optional(),
@@ -36,16 +36,16 @@ export const updateUserSchema = z.object({
 });
 
 export const getUserSchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
 });
 
 export const deleteUserSchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
 });
 
 // Schema for admin updating user
 export const adminUpdateUserSchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
   body: userBaseSchema
     .extend({
       role: z.enum(["user", "admin"]), // Allows changing role
@@ -64,7 +64,7 @@ export const updateMeSchema = z.object({
 
 // Schema for banning a user
 export const banUserSchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
   body: z.object({
     reason: z.string().min(1, "Ban reason is required"),
     bannedUntil: z.coerce.date().optional(), // Coerce string to Date object
@@ -73,7 +73,7 @@ export const banUserSchema = z.object({
 
 // Schema for unbanning a user
 export const unbanUserSchema = z.object({
-  params: paramsWithIdSchema.shape,
+  params: paramsWithIdSchema,
 });
 
 // Schema for searching users

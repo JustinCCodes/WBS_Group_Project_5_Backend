@@ -62,7 +62,10 @@ export const createCategory = async (
         .json({ error: "A category with this name already exists." });
     }
 
-    const newCategory = new Category({ name });
+    const newCategory = new Category({
+      name,
+      createdBy: req.user?.id,
+    });
     await newCategory.save();
     res.status(201).json(newCategory);
   } catch (error) {

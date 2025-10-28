@@ -7,6 +7,9 @@ export interface IUser extends Document {
   email: string;
   password?: string; // Optional
   role: "user" | "admin";
+  status: "active" | "banned";
+  bannedReason?: string;
+  bannedUntil?: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -35,6 +38,19 @@ const userSchema = new Schema<IUser>(
       type: String,
       enum: ["user", "admin"],
       default: "user",
+    },
+    status: {
+      type: String,
+      enum: ["active", "banned"],
+      default: "active",
+    },
+    bannedReason: {
+      type: String,
+      required: false,
+    },
+    bannedUntil: {
+      type: Date,
+      required: false,
     },
   },
   {

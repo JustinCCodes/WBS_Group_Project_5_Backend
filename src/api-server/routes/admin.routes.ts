@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as adminUserController from "../controllers/admin.user.controller";
 import * as adminOrderController from "../controllers/admin.order.controller";
+import * as adminTestOrderController from "../controllers/admin.testOrder.controller";
 import { validateRequest, requireAuth, isAdmin } from "@shared/middleware";
 import {
   adminUpdateUserSchema,
@@ -10,14 +11,24 @@ import {
   adminGetOrdersSchema,
   getOrderSchema,
   deleteOrderSchema,
+  banUserSchema,
+  unbanUserSchema,
+  searchUsersSchema,
+  createTestOrderSchema,
+  getTestOrdersSchema,
+  deleteTestOrderSchema,
 } from "@shared/schemas";
-// Might need an adminGetUsersSchema if adding pagination/filters
 
 const router = Router();
 
 router.use(requireAuth, isAdmin);
 
 // Admin User Management
+router.get(
+  "/users/search",
+  validateRequest(searchUsersSchema),
+  adminUserController.searchUsers
+);
 router.get("/users", adminUserController.getAllUsers);
 router.get(
   "/users/:id",
@@ -28,6 +39,16 @@ router.put(
   "/users/:id",
   validateRequest(adminUpdateUserSchema),
   adminUserController.updateUser
+);
+router.put(
+  "/users/:id/ban",
+  validateRequest(banUserSchema),
+  adminUserController.banUser
+);
+router.put(
+  "/users/:id/unban",
+  validateRequest(unbanUserSchema),
+  adminUserController.unbanUser
 );
 router.delete(
   "/users/:id",
@@ -55,6 +76,23 @@ router.delete(
   "/orders/:id",
   validateRequest(deleteOrderSchema),
   adminOrderController.deleteOrder
+);
+
+// Admin Test Order Management
+router.post(
+  "/test-orders",
+  validateRequest(createTestOrderSchema),
+  adminTestOrderController.createTestOrder
+);
+router.get(
+  "/test-orders",
+  validateRequest(getTestOrdersSchema),
+  adminTestOrderController.getTestOrders
+);
+router.delete(
+  "/test-orders/:id",
+  validateRequest(deleteTestOrderSchema),
+  adminTestOrderController.deleteTestOrder
 );
 
 export default router;

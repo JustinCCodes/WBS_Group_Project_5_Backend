@@ -6,6 +6,7 @@ export interface IProduct extends Document {
   description: string;
   price: number;
   categoryId: Schema.Types.ObjectId;
+  createdBy?: Schema.Types.ObjectId;
 }
 
 // Schema
@@ -30,6 +31,11 @@ const productSchema = new Schema<IProduct>(
       type: Schema.Types.ObjectId,
       ref: "Category",
       required: [true, "A product must belong to a category"],
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
     },
   },
   {

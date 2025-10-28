@@ -2,6 +2,7 @@ import { Router } from "express";
 import * as adminUserController from "../controllers/admin.user.controller";
 import * as adminOrderController from "../controllers/admin.order.controller";
 import * as adminTestOrderController from "../controllers/admin.testOrder.controller";
+import * as adminCategoryController from "../controllers/admin.category.controller";
 import { validateRequest, requireAuth, isAdmin } from "@shared/middleware";
 import {
   adminUpdateUserSchema,
@@ -22,6 +23,9 @@ import {
 const router = Router();
 
 router.use(requireAuth, isAdmin);
+
+// Admin Category Management
+router.get("/categories", adminCategoryController.adminGetAllCategories);
 
 // Admin User Management
 router.get(

@@ -5,8 +5,10 @@ export interface IProduct extends Document {
   name: string;
   description: string;
   price: number;
+  stock: number;
   categoryId: Schema.Types.ObjectId;
   createdBy?: Schema.Types.ObjectId;
+  featured: boolean;
 }
 
 // Schema
@@ -27,6 +29,12 @@ const productSchema = new Schema<IProduct>(
       required: [true, "A product must have a price"],
       min: [0, "Price must be a non-negative number"],
     },
+    stock: {
+      type: Number,
+      required: [true, "A product must have a stock value"],
+      min: [0, "Stock cannot be negative"],
+      default: 0,
+    },
     categoryId: {
       type: Schema.Types.ObjectId,
       ref: "Category",
@@ -36,6 +44,10 @@ const productSchema = new Schema<IProduct>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: false,
+    },
+    featured: {
+      type: Boolean,
+      default: false,
     },
   },
   {

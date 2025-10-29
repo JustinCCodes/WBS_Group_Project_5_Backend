@@ -11,15 +11,22 @@ export const getAllProducts = async (
   next: NextFunction
 ) => {
   try {
-    const { categoryId, page = 1, limit = 10 } = req.query;
+    // Uses validated query params if available (from validation middleware)
+    const validatedQuery = (req as any).validated?.query || req.query;
+    const { categoryId, featured, page = 1, limit = 10 } = validatedQuery;
 
-    const queryFilter: { categoryId?: string } = {};
+    const queryFilter: { categoryId?: string; featured?: boolean } = {};
     if (
       categoryId &&
       typeof categoryId === "string" &&
       mongoose.Types.ObjectId.isValid(categoryId)
     ) {
       queryFilter.categoryId = categoryId;
+    }
+
+    // Adds featured filter if provided
+    if (featured !== undefined && typeof featured === "boolean") {
+      queryFilter.featured = featured;
     }
 
     const pagination = paginate(Number(page), Number(limit));
@@ -64,14 +71,16 @@ export const getProductById = async (
   }
 };
 
-// --- Create Product ---
+// Create Product
 // POST /api/v1/products
 export const createProduct = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const { name, description, price, categoryId } = req.body;
+  // Uses validated body if available (from validation middleware)
+  const validatedBody = (req as any).validated?.body || req.body;
+  const { name, description, price, stock, categoryId } = validatedBody;
 
   try {
     // Checks if categoryId exists
@@ -86,12 +95,13 @@ export const createProduct = async (
       name,
       description,
       price,
+      stock: stock !== undefined ? stock : 0, // Uses provided stock or default to 0
       categoryId,
       createdBy: req.user?.id,
     });
     await newProduct.save();
 
-    // Populate the response
+    // Populates the response
     const populatedProduct = await Product.findById(newProduct._id)
       .populate("categoryId", "name")
       .populate("createdBy", "name email");
@@ -113,7 +123,9 @@ export const updateProduct = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
-  const updates = req.body; // { name?, description?, price?, categoryId? }
+  // Uses validated body if available (from validation middleware)
+  const validatedBody = (req as any).validated?.body || req.body;
+  const updates = validatedBody;
 
   try {
     // If categoryId is being updated checks if it exists

@@ -45,6 +45,87 @@ export const calculateOrderTotal = async (
   return Math.round(total * 100) / 100;
 };
 
+// Validates stock availability and decreases stock for order
+export const validateAndDecreaseStock = async (
+  products: { productId: string | mongoose.Types.ObjectId; quantity: number }[],
+  session?: mongoose.ClientSession
+): Promise<void> => {
+  if (!products || products.length === 0) {
+    return;
+  }
+
+  const productIds = products.map((p) => p.productId);
+
+  // Fetches products with stock information
+  const foundProducts = await Product.find({ _id: { $in: productIds } })
+    .select("stock _id name")
+    .session(session || null);
+
+  // Creates a map for quick lookup
+  const productMap = new Map<string, { stock: number; name: string }>();
+  foundProducts.forEach((product) => {
+    if (product._id) {
+      productMap.set(product._id.toString(), {
+        stock: product.stock,
+        name: product.name,
+      });
+    }
+  });
+
+  // Check stock availability for all products first
+  const insufficientStock: string[] = [];
+  for (const item of products) {
+    const product = productMap.get(item.productId.toString());
+
+    if (!product) {
+      throw new Error(`Product with ID ${item.productId} not found.`);
+    }
+
+    if (product.stock < item.quantity) {
+      insufficientStock.push(
+        `${product.name} (requested: ${item.quantity}, available: ${product.stock})`
+      );
+    }
+  }
+
+  // If any product has insufficient stock throw error before updating anything
+  if (insufficientStock.length > 0) {
+    throw new Error(
+      `Insufficient stock for the following products: ${insufficientStock.join(
+        ", "
+      )}`
+    );
+  }
+
+  // All stock is available now decrease stock for each product
+  for (const item of products) {
+    await Product.findByIdAndUpdate(
+      item.productId,
+      { $inc: { stock: -item.quantity } },
+      { session: session || undefined }
+    );
+  }
+};
+
+// Restores stock when order is cancelled or deleted
+export const restoreStock = async (
+  products: { productId: string | mongoose.Types.ObjectId; quantity: number }[],
+  session?: mongoose.ClientSession
+): Promise<void> => {
+  if (!products || products.length === 0) {
+    return;
+  }
+
+  // Increases stock for each product
+  for (const item of products) {
+    await Product.findByIdAndUpdate(
+      item.productId,
+      { $inc: { stock: item.quantity } },
+      { session: session || undefined }
+    );
+  }
+};
+
 // Authentication Helpers
 
 // Helper function to set authentication cookies

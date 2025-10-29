@@ -3,6 +3,7 @@ import * as adminUserController from "../controllers/admin.user.controller";
 import * as adminOrderController from "../controllers/admin.order.controller";
 import * as adminTestOrderController from "../controllers/admin.testOrder.controller";
 import * as adminCategoryController from "../controllers/admin.category.controller";
+import * as adminProductController from "../controllers/admin.product.controller";
 import { validateRequest, requireAuth, isAdmin } from "@shared/middleware";
 import {
   adminUpdateUserSchema,
@@ -18,6 +19,9 @@ import {
   createTestOrderSchema,
   getTestOrdersSchema,
   deleteTestOrderSchema,
+  featureProductSchema,
+  unfeatureProductSchema,
+  updateStockSchema,
 } from "@shared/schemas";
 
 const router = Router();
@@ -98,5 +102,25 @@ router.delete(
   validateRequest(deleteTestOrderSchema),
   adminTestOrderController.deleteTestOrder
 );
+
+// Admin Product Management - Featured Products
+router.put(
+  "/products/:id/feature",
+  validateRequest(featureProductSchema),
+  adminProductController.markProductAsFeatured
+);
+router.put(
+  "/products/:id/unfeature",
+  validateRequest(unfeatureProductSchema),
+  adminProductController.unmarkProductAsFeatured
+);
+
+// Admin Product Management - Stock Management
+router.put(
+  "/products/:id/stock",
+  validateRequest(updateStockSchema),
+  adminProductController.updateProductStock
+);
+router.get("/products/low-stock", adminProductController.getLowStockProducts);
 
 export default router;

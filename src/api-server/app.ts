@@ -16,7 +16,15 @@ import {
 const app: Express = express();
 
 // Middleware Setup
-const corsOptions = { origin: env.CORS_ORIGIN, credentials: true };
+// CORS configuration with credentials for cookie support
+const corsOptions = {
+  origin: env.CORS_ORIGIN,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+  exposedHeaders: ["Set-Cookie"],
+  optionsSuccessStatus: 200,
+};
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" })); // Limits request body size to prevent DoS
 app.use(cookieParser());

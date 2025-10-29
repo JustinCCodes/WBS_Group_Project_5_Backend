@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import { Order } from "@shared/models";
 import mongoose from "mongoose";
-import { calculateOrderTotal, paginate } from "@shared/utils/helper";
+import {
+  calculateOrderTotal,
+  paginate,
+  restoreStock,
+} from "@shared/utils/helper";
 
 // Interface for order filter query
 interface OrderFilterQuery {
@@ -107,8 +111,17 @@ export const updateOrder = async (
       orderToUpdate.total = calculatedTotal;
     }
 
-    // Updates status if provided
+    // Updates status if provided and handle stock restoration for cancellations
     if (status) {
+      // If order is being cancelled restore stock
+      if (status === "cancelled" && orderToUpdate.status !== "cancelled") {
+        await restoreStock(
+          orderToUpdate.products as unknown as {
+            productId: string | mongoose.Types.ObjectId;
+            quantity: number;
+          }[]
+        );
+      }
       orderToUpdate.status = status;
     }
 
@@ -142,11 +155,23 @@ export const deleteOrder = async (
   const { id } = req.params;
 
   try {
-    const deletedOrder = await Order.findByIdAndDelete(id);
+    const orderToDelete = await Order.findById(id);
 
-    if (!deletedOrder) {
+    if (!orderToDelete) {
       return res.status(404).json({ error: "Order not found." });
     }
+
+    // Restore stock before deleting (only if not cancelled)
+    if (orderToDelete.status !== "cancelled") {
+      await restoreStock(
+        orderToDelete.products as unknown as {
+          productId: string | mongoose.Types.ObjectId;
+          quantity: number;
+        }[]
+      );
+    }
+
+    await Order.findByIdAndDelete(id);
     res.status(204).send();
   } catch (error) {
     next(error);

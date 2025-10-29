@@ -1,7 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { Order } from "../../shared/models";
 import mongoose from "mongoose";
-import { calculateOrderTotal, paginate } from "../../shared/utils/helper";
+import {
+  calculateOrderTotal,
+  paginate,
+  validateAndDecreaseStock,
+  restoreStock,
+} from "../../shared/utils/helper";
 
 // Create Order
 // POST /api/v1/orders
@@ -14,9 +19,12 @@ export const createOrder = async (
     return res.status(401).json({ error: "Authentication required." });
   }
   const userId = req.user.id;
-  const { products } = req.body; // Array of { productId: string, quantity: number }
+  const { products } = req.body;
 
   try {
+    // Validates stock availability and decreases stock
+    await validateAndDecreaseStock(products);
+
     // Calculates total server side (also validates product IDs)
     const calculatedTotal = await calculateOrderTotal(products);
 
@@ -38,9 +46,16 @@ export const createOrder = async (
 
     res.status(201).json(populatedOrder);
   } catch (error) {
-    // Handles specific error from calculateOrderTotal
-    if (error instanceof Error && error.message.startsWith("Product with ID")) {
-      return res.status(400).json({ error: error.message });
+    // Handles specific errors
+    if (error instanceof Error) {
+      // Stock validation errors
+      if (error.message.startsWith("Insufficient stock")) {
+        return res.status(400).json({ error: error.message });
+      }
+      // Product not found errors
+      if (error.message.startsWith("Product with ID")) {
+        return res.status(400).json({ error: error.message });
+      }
     }
     // Handles Mongoose validation errors
     if (error instanceof mongoose.Error.ValidationError) {
@@ -70,7 +85,7 @@ export const getUserOrders = async (
       .populate("products.productId", "name price") // Populates product details
       .limit(pagination.limit)
       .skip(pagination.skip)
-      .sort({ createdAt: -1 }); // Sort by newest first
+      .sort({ createdAt: -1 }); // Sorts by newest first
 
     const totalOrders = await Order.countDocuments({ userId: userId });
 
@@ -220,6 +235,16 @@ export const deleteOrder = async (
       return res.status(400).json({
         error: `Cannot delete order with status '${orderToDelete.status}'.`,
       });
+    }
+
+    // Restore stock before deleting order (only if order was not cancelled as cancelled orders already restored stock)
+    if (orderToDelete.status !== "cancelled") {
+      await restoreStock(
+        orderToDelete.products as unknown as {
+          productId: string | mongoose.Types.ObjectId;
+          quantity: number;
+        }[]
+      );
     }
 
     await Order.findByIdAndDelete(orderId);

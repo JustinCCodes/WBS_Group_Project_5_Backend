@@ -5,11 +5,41 @@ import { ZodType, ZodError } from "zod";
 export const validateRequest =
   (schema: ZodType) => (req: Request, res: Response, next: NextFunction) => {
     try {
-      schema.parse({
+      const validated = schema.parse({
         body: req.body,
         query: req.query,
         params: req.params,
-      });
+      }) as { body?: any; query?: any; params?: any };
+
+      // Stores validated data in a custom property and also try to update originals
+      (req as any).validated = validated;
+
+      // Tries to update individual properties
+      try {
+        if (validated.query !== undefined) {
+          for (const key in validated.query) {
+            if (Object.prototype.hasOwnProperty.call(validated.query, key)) {
+              (req.query as any)[key] = validated.query[key];
+            }
+          }
+        }
+        if (validated.body !== undefined) {
+          for (const key in validated.body) {
+            if (Object.prototype.hasOwnProperty.call(validated.body, key)) {
+              (req.body as any)[key] = validated.body[key];
+            }
+          }
+        }
+        if (validated.params !== undefined) {
+          for (const key in validated.params) {
+            if (Object.prototype.hasOwnProperty.call(validated.params, key)) {
+              (req.params as any)[key] = validated.params[key];
+            }
+          }
+        }
+      } catch (e) {
+        // If setting properties fails the controller can use req.validated
+      }
 
       // If validation good move to next middleware or handler
       return next();

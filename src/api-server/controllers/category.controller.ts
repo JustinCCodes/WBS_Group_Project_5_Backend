@@ -145,6 +145,7 @@ export const deleteCategory = async (
     }
     res.status(204).send();
   } catch (error) {
+    console.error("Error deleting category:", error);
     next(error);
   }
 };

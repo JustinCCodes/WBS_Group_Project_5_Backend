@@ -25,6 +25,8 @@ export const getAllProducts = async (
     const pagination = paginate(Number(page), Number(limit));
 
     const products = await Product.find(queryFilter)
+      .populate("categoryId", "name")
+      .populate("createdBy", "name email")
       .limit(pagination.limit)
       .skip(pagination.skip)
       .sort({ createdAt: -1 }); // Sorts by newest first
@@ -50,7 +52,9 @@ export const getProductById = async (
   const { id } = req.params;
 
   try {
-    const product = await Product.findById(id).populate("categoryId", "name"); // Populates category name
+    const product = await Product.findById(id)
+      .populate("categoryId", "name")
+      .populate("createdBy", "name email");
     if (!product) {
       return res.status(404).json({ error: "Product not found." });
     }
@@ -83,9 +87,16 @@ export const createProduct = async (
       description,
       price,
       categoryId,
+      createdBy: req.user?.id,
     });
     await newProduct.save();
-    res.status(201).json(newProduct);
+
+    // Populate the response
+    const populatedProduct = await Product.findById(newProduct._id)
+      .populate("categoryId", "name")
+      .populate("createdBy", "name email");
+
+    res.status(201).json(populatedProduct);
   } catch (error) {
     if (error instanceof mongoose.Error.ValidationError) {
       return res.status(400).json({ error: error.message });
@@ -124,7 +135,9 @@ export const updateProduct = async (
       id,
       updates,
       { new: true, runValidators: true } // Returns updated doc runs validations
-    );
+    )
+      .populate("categoryId", "name")
+      .populate("createdBy", "name email");
 
     if (!updatedProduct) {
       return res.status(404).json({ error: "Product not found." });

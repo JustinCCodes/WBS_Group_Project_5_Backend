@@ -26,7 +26,6 @@ export const calculateOrderTotal = async (
   // Creates a map for quick price lookup
   const priceMap = new Map<string, number>();
   foundProducts.forEach((product) => {
-    // Accesses _id directly - Mongoose documents have _id
     if (product._id) {
       priceMap.set(product._id.toString(), product.price);
     }
@@ -70,7 +69,7 @@ export const sendTokens = (
       secure: env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: parseInt(env.JWT_REFRESH_COOKIE_MAX_AGE), // 7 days
-      path: "/api/v1/auth",
+      path: "/",
     });
   }
 };
@@ -84,7 +83,7 @@ export const clearAuthCookies = (res: Response): void => {
     sameSite: "lax",
   });
   res.clearCookie("refreshToken", {
-    path: "/api/v1/auth",
+    path: "/",
     httpOnly: true,
     secure: env.NODE_ENV === "production",
     sameSite: "lax",

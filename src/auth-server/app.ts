@@ -10,7 +10,15 @@ import authRouter from "./routes/auth.routes";
 const authApp: Express = express();
 
 // Middleware Setup
-const corsOptions = { origin: env.CORS_ORIGIN, credentials: true };
+// CORS configuration with credentials for cookie support
+const corsOptions = {
+  origin: env.CORS_ORIGIN,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+  exposedHeaders: ["Set-Cookie"],
+  optionsSuccessStatus: 200,
+};
 authApp.use(cors(corsOptions));
 authApp.use(express.json({ limit: "10mb" }));
 authApp.use(cookieParser());

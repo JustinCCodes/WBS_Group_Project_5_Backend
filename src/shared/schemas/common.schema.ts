@@ -2,14 +2,17 @@ import { z } from "zod";
 import mongoose from "mongoose";
 
 // Reusable schema for MongoDB ObjectId validation
-export const objectIdSchema = z.string().refine(
-  (val) => {
-    return mongoose.Types.ObjectId.isValid(val);
-  },
-  {
-    message: "Invalid ObjectId",
-  }
-);
+export const objectIdSchema = z
+  .string()
+  .min(1, "ID is required")
+  .refine(
+    (val) => {
+      return mongoose.Types.ObjectId.isValid(val);
+    },
+    {
+      message: "Invalid ObjectId format",
+    }
+  );
 
 // Reusable schema for request parameters with ID
 export const paramsWithIdSchema = z.object({

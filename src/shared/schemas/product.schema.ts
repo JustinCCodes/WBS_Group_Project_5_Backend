@@ -15,6 +15,11 @@ const productBaseSchema = z.object({
     .nonnegative("Stock cannot be negative")
     .default(0),
   categoryId: objectIdSchema, // Validates categoryId is a valid ObjectId string
+  imageUrl: z
+    .string()
+    .url("Image URL must be a valid URL")
+    .min(1, "Product image is required"),
+  imagePublicId: z.string().min(1, "Image public ID is required"),
 });
 
 export const createProductSchema = z.object({

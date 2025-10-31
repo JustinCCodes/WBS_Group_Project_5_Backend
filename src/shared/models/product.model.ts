@@ -9,6 +9,8 @@ export interface IProduct extends Document {
   categoryId: Schema.Types.ObjectId;
   createdBy?: Schema.Types.ObjectId;
   featured: boolean;
+  imageUrl: string;
+  imagePublicId: string;
 }
 
 // Schema
@@ -48,6 +50,14 @@ const productSchema = new Schema<IProduct>(
     featured: {
       type: Boolean,
       default: false,
+    },
+    imageUrl: {
+      type: String,
+      required: true,
+    },
+    imagePublicId: {
+      type: String,
+      required: true,
     },
   },
   {

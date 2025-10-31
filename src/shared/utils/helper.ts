@@ -3,6 +3,7 @@ import { Product, RefreshToken } from "../models";
 import { Response } from "express";
 import { env } from "../config/env";
 import bcrypt from "bcryptjs";
+import cloudinary from "../config/cloudinary";
 
 // Order Helpers
 
@@ -215,4 +216,67 @@ export const paginate = (page: number = 1, limit: number = 10) => {
       limit,
     }),
   };
+};
+
+// Cloudinary Helpers
+
+// Upload image to Cloudinary
+export const uploadImageToCloudinary = async (
+  imageBuffer: Buffer,
+  folder: string = "products"
+): Promise<{ url: string; publicId: string }> => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: folder,
+        resource_type: "auto",
+      },
+      (error, result) => {
+        if (error || !result) {
+          reject(error || new Error("Upload failed"));
+        } else {
+          resolve({
+            url: result.secure_url,
+            publicId: result.public_id,
+          });
+        }
+      }
+    );
+
+    uploadStream.end(imageBuffer);
+  });
+};
+
+// Delete image from Cloudinary
+export const deleteImageFromCloudinary = async (
+  publicId: string
+): Promise<{ result: string }> => {
+  try {
+    const result = await cloudinary.uploader.destroy(publicId);
+    return result;
+  } catch (error) {
+    console.error("Error deleting image from Cloudinary:", error);
+    throw new Error("Failed to delete image from Cloudinary");
+  }
+};
+
+// Upload multiple images to Cloudinary
+export const uploadMultipleImagesToCloudinary = async (
+  imageBuffers: Buffer[],
+  folder: string = "products"
+): Promise<{ url: string; publicId: string }[]> => {
+  const uploadPromises = imageBuffers.map((buffer) =>
+    uploadImageToCloudinary(buffer, folder)
+  );
+  return Promise.all(uploadPromises);
+};
+
+// Delete multiple images from Cloudinary
+export const deleteMultipleImagesFromCloudinary = async (
+  publicIds: string[]
+): Promise<void> => {
+  const deletePromises = publicIds.map((publicId) =>
+    deleteImageFromCloudinary(publicId)
+  );
+  await Promise.all(deletePromises);
 };

@@ -7,6 +7,7 @@ import {
   deleteOrder,
 } from "../controllers/order.controller";
 import { validateRequest, requireAuth } from "@shared/middleware";
+import requireCsrfToken from "@shared/middleware/csrf.middleware";
 import {
   createOrderSchema,
   updateOrderSchema,
@@ -24,15 +25,30 @@ router.use(requireAuth);
 router.get("/", validateRequest(getOrdersSchema), getUserOrders);
 
 // POST /api/v1/orders (Creates order for logged in user)
-router.post("/", validateRequest(createOrderSchema), createOrder);
+router.post(
+  "/",
+  requireCsrfToken,
+  validateRequest(createOrderSchema),
+  createOrder
+);
 
 // GET /api/v1/orders/:id (Gets users own specific order)
 router.get("/:id", validateRequest(getOrderSchema), getOrderById);
 
 // PUT /api/v1/orders/:id (Updates users own specific order)
-router.put("/:id", validateRequest(updateOrderSchema), updateOrder);
+router.put(
+  "/:id",
+  requireCsrfToken,
+  validateRequest(updateOrderSchema),
+  updateOrder
+);
 
 // DELETE /api/v1/orders/:id (Deletes users own specific order)
-router.delete("/:id", validateRequest(deleteOrderSchema), deleteOrder);
+router.delete(
+  "/:id",
+  requireCsrfToken,
+  validateRequest(deleteOrderSchema),
+  deleteOrder
+);
 
 export default router;

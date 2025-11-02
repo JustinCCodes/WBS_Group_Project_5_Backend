@@ -85,3 +85,8 @@ export const searchUsersSchema = z.object({
     })
     .partial(),
 });
+
+// Schema for getting all users with pagination
+export const getAllUsersSchema = z.object({
+  query: paginationQuerySchema.partial(),
+});

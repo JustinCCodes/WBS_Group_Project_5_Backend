@@ -73,7 +73,7 @@ export const validateAndDecreaseStock = async (
     }
   });
 
-  // Check stock availability for all products first
+  // Checks stock availability for all products first
   const insufficientStock: string[] = [];
   for (const item of products) {
     const product = productMap.get(item.productId.toString());
@@ -154,6 +154,15 @@ export const sendTokens = (
       path: "/",
     });
   }
+  // Set CSRF token as a non httpOnly cookie for double submit CSRF protection
+  const csrfToken = require("crypto").randomBytes(32).toString("hex");
+  res.cookie("csrfToken", csrfToken, {
+    httpOnly: false,
+    secure: env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: parseInt(env.JWT_REFRESH_COOKIE_MAX_AGE),
+    path: "/",
+  });
 };
 
 // Helper function to clear authentication cookies
@@ -247,7 +256,7 @@ export const uploadImageToCloudinary = async (
   });
 };
 
-// Delete image from Cloudinary
+// Deletes image from Cloudinary
 export const deleteImageFromCloudinary = async (
   publicId: string
 ): Promise<{ result: string }> => {
@@ -260,7 +269,7 @@ export const deleteImageFromCloudinary = async (
   }
 };
 
-// Upload multiple images to Cloudinary
+// Uploads multiple images to Cloudinary
 export const uploadMultipleImagesToCloudinary = async (
   imageBuffers: Buffer[],
   folder: string = "products"
@@ -271,7 +280,7 @@ export const uploadMultipleImagesToCloudinary = async (
   return Promise.all(uploadPromises);
 };
 
-// Delete multiple images from Cloudinary
+// Deletes multiple images from Cloudinary
 export const deleteMultipleImagesFromCloudinary = async (
   publicIds: string[]
 ): Promise<void> => {

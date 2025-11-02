@@ -23,6 +23,7 @@ export const validateRequest =
             }
           }
         }
+        // Update body
         if (validated.body !== undefined) {
           for (const key in validated.body) {
             if (Object.prototype.hasOwnProperty.call(validated.body, key)) {
@@ -30,6 +31,7 @@ export const validateRequest =
             }
           }
         }
+        // Update params
         if (validated.params !== undefined) {
           for (const key in validated.params) {
             if (Object.prototype.hasOwnProperty.call(validated.params, key)) {
@@ -51,7 +53,7 @@ export const validateRequest =
           path: issue.path.join("."),
           message: issue.message,
         }));
-        // Send a 400 response
+        // Sends a 400 response
         return res.status(400).json({ errors: formattedErrors });
       }
       // If another error passes it to global error handler

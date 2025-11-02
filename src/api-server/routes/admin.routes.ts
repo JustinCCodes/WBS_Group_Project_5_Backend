@@ -5,6 +5,7 @@ import * as adminTestOrderController from "../controllers/admin.testOrder.contro
 import * as adminCategoryController from "../controllers/admin.category.controller";
 import * as adminProductController from "../controllers/admin.product.controller";
 import { validateRequest, requireAuth, isAdmin } from "@shared/middleware";
+import requireCsrfToken from "@shared/middleware/csrf.middleware";
 import {
   adminUpdateUserSchema,
   adminUpdateOrderSchema,
@@ -16,16 +17,19 @@ import {
   banUserSchema,
   unbanUserSchema,
   searchUsersSchema,
+  getAllUsersSchema,
   createTestOrderSchema,
   getTestOrdersSchema,
   deleteTestOrderSchema,
   featureProductSchema,
   unfeatureProductSchema,
   updateStockSchema,
+  getLowStockSchema,
 } from "@shared/schemas";
 
 const router = Router();
 
+// All admin routes require auth and admin role
 router.use(requireAuth, isAdmin);
 
 // Admin Category Management
@@ -37,7 +41,11 @@ router.get(
   validateRequest(searchUsersSchema),
   adminUserController.searchUsers
 );
-router.get("/users", adminUserController.getAllUsers);
+router.get(
+  "/users",
+  validateRequest(getAllUsersSchema),
+  adminUserController.getAllUsers
+);
 router.get(
   "/users/:id",
   validateRequest(getUserSchema),
@@ -46,21 +54,25 @@ router.get(
 router.put(
   "/users/:id",
   validateRequest(adminUpdateUserSchema),
+  requireCsrfToken,
   adminUserController.updateUser
 );
 router.put(
   "/users/:id/ban",
   validateRequest(banUserSchema),
+  requireCsrfToken,
   adminUserController.banUser
 );
 router.put(
   "/users/:id/unban",
   validateRequest(unbanUserSchema),
+  requireCsrfToken,
   adminUserController.unbanUser
 );
 router.delete(
   "/users/:id",
   validateRequest(deleteUserSchema),
+  requireCsrfToken,
   adminUserController.deleteUser
 );
 
@@ -78,11 +90,13 @@ router.get(
 router.put(
   "/orders/:id",
   validateRequest(adminUpdateOrderSchema),
+  requireCsrfToken,
   adminOrderController.updateOrder
 );
 router.delete(
   "/orders/:id",
   validateRequest(deleteOrderSchema),
+  requireCsrfToken,
   adminOrderController.deleteOrder
 );
 
@@ -90,6 +104,7 @@ router.delete(
 router.post(
   "/test-orders",
   validateRequest(createTestOrderSchema),
+  requireCsrfToken,
   adminTestOrderController.createTestOrder
 );
 router.get(
@@ -100,6 +115,7 @@ router.get(
 router.delete(
   "/test-orders/:id",
   validateRequest(deleteTestOrderSchema),
+  requireCsrfToken,
   adminTestOrderController.deleteTestOrder
 );
 
@@ -107,11 +123,13 @@ router.delete(
 router.put(
   "/products/:id/feature",
   validateRequest(featureProductSchema),
+  requireCsrfToken,
   adminProductController.markProductAsFeatured
 );
 router.put(
   "/products/:id/unfeature",
   validateRequest(unfeatureProductSchema),
+  requireCsrfToken,
   adminProductController.unmarkProductAsFeatured
 );
 
@@ -119,8 +137,13 @@ router.put(
 router.put(
   "/products/:id/stock",
   validateRequest(updateStockSchema),
+  requireCsrfToken,
   adminProductController.updateProductStock
 );
-router.get("/products/low-stock", adminProductController.getLowStockProducts);
+router.get(
+  "/products/low-stock",
+  validateRequest(getLowStockSchema),
+  adminProductController.getLowStockProducts
+);
 
 export default router;

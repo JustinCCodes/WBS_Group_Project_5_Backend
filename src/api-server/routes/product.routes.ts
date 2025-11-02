@@ -7,6 +7,7 @@ import {
   deleteProduct,
 } from "../controllers/product.controller";
 import { validateRequest, requireAuth, isAdmin } from "@shared/middleware";
+import requireCsrfToken from "@shared/middleware/csrf.middleware";
 import {
   createProductSchema,
   updateProductSchema,
@@ -28,6 +29,7 @@ router.post(
   "/",
   requireAuth,
   isAdmin,
+  requireCsrfToken,
   validateRequest(createProductSchema),
   createProduct
 );
@@ -37,6 +39,7 @@ router.put(
   "/:id",
   requireAuth,
   isAdmin,
+  requireCsrfToken,
   validateRequest(updateProductSchema),
   updateProduct
 );
@@ -46,6 +49,7 @@ router.delete(
   "/:id",
   requireAuth,
   isAdmin,
+  requireCsrfToken,
   validateRequest(deleteProductSchema),
   deleteProduct
 );

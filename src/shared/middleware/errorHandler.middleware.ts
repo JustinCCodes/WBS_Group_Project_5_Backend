@@ -21,10 +21,8 @@ export const errorHandler: ErrorRequestHandler = (
   // Determines the status code default to 500
   const statusCode = err.status || 500;
 
-  // Send a generic error response
+  // Send a generic error response - never expose stack traces to client
   res.status(statusCode).json({
     error: err.message || "Internal Server Error",
-    // Optionally include stack trace in development
-    ...(env.NODE_ENV === "development" && { stack: err.stack }),
   });
 };

@@ -15,14 +15,32 @@ import {
 
 const app: Express = express();
 
-// Middleware Setup
+const allowedOrigins = [
+  env.CORS_ORIGIN, // Shop frontend (e.g., http://localhost:3000)
+  env.ADMIN_CORS_ORIGIN, // Admin app (e.g., http://localhost:3002)
+  "tauri://localhost", // Tauri desktop app origin
+];
+
 // CORS configuration with credentials for cookie support
 const corsOptions = {
-  origin: env.CORS_ORIGIN,
+  // Uses function to check the origin
+  origin: (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void
+  ) => {
+    // allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true); // Origin is allowed
+    } else {
+      callback(new Error("Not allowed by CORS")); // Origin is not allowed
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-  exposedHeaders: ["Set-Cookie"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie", "X-CSRF-Token"],
+  // exposedHeaders removed for Set-Cookie (not necessary)
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));

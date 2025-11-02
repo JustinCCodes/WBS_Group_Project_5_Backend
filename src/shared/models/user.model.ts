@@ -3,13 +3,16 @@ import bcrypt from "bcryptjs";
 
 // Interface
 export interface IUser extends Document {
-  name: string;
-  email: string;
+  name: string; // Full name
+  email: string; // Email address
   password?: string; // Optional
-  role: "user" | "admin";
-  status: "active" | "banned";
-  bannedReason?: string;
-  bannedUntil?: Date;
+  role: "user" | "admin"; // User role
+  status: "active" | "banned"; // Account status
+  bannedReason?: string; // Reason for banning
+  bannedUntil?: Date; // When the ban expires
+  failedLoginAttempts?: number; // Failed login attempts
+  lockUntil?: Date; // When the account is unlocked
+  lastFailedLogin?: Date; // When the last failed login attempt occurred
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -17,59 +20,73 @@ export interface IUser extends Document {
 const userSchema = new Schema<IUser>(
   {
     name: {
-      type: String,
-      required: [true, "Please provide your name"],
-      trim: true,
+      type: String, // Full name
+      required: [true, "Please provide your name"], // Name is required
+      trim: true, // Trims whitespace
     },
     email: {
-      type: String,
-      required: [true, "Please provide your email"],
-      unique: true,
-      lowercase: true,
-      trim: true,
+      type: String, // Email address
+      required: [true, "Please provide your email"], // Email is required
+      unique: true, // Unique email
+      lowercase: true, // Converts to lowercase
+      trim: true, // Trims whitespace
     },
     password: {
-      type: String,
-      required: [true, "Please provide a password"],
-      minlength: 8,
+      type: String, // Password hash
+      required: [true, "Please provide a password"], // Password is required
+      minlength: 8, // Minimum length
       select: false, // Does not include password hash by default
     },
     role: {
-      type: String,
-      enum: ["user", "admin"],
-      default: "user",
+      type: String, // User role
+      enum: ["user", "admin"], // Allowed roles
+      default: "user", // Default role is user
     },
     status: {
-      type: String,
-      enum: ["active", "banned"],
-      default: "active",
+      type: String, // Account status
+      enum: ["active", "banned"], // Allowed statuses
+      default: "active", // Default status is active
     },
     bannedReason: {
-      type: String,
-      required: false,
+      type: String, // Reason for banning
+      required: false, // Optional
     },
     bannedUntil: {
-      type: Date,
-      required: false,
+      type: Date, // When the ban expires
+      required: false, // Optional
+    },
+    // Failed login tracking for per-account lockout/backoff
+    failedLoginAttempts: {
+      type: Number, // Count of failed login attempts
+      default: 0, // Default to 0
+      required: false, // Optional
+    },
+    lockUntil: {
+      type: Date, // When the account is locked until
+      required: false, // Optional
+    },
+    lastFailedLogin: {
+      type: Date, // When the last failed login attempt occurred
+      required: false, // Optional
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // Adds createdAt and updatedAt fields
     toJSON: {
-      virtuals: true,
+      virtuals: true, // Ensures password is not returned in toJSON calls
       transform: (doc, ret) => {
-        ret.id = ret._id;
-        delete ret._id;
-        delete ret.password;
+        ret.id = ret._id; // Maps _id to id
+        delete ret._id; // Removes _id
+        delete ret.password; // Removes password
       },
     },
     // Ensures password is not returned in toObject calls
     toObject: {
-      virtuals: true,
+      virtuals: true, // Ensures virtuals are included
       transform: (doc, ret) => {
-        ret.id = ret._id;
-        delete ret._id;
-        delete ret.password;
+        ret.id = ret._id; // Maps _id to id
+        delete ret._id; // Removes _id
+        delete ret.password; // Removes password
       },
     },
   }

@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "nodemon -r tsconfig-paths/register src/api-server/server.ts",
     "dev:auth": "nodemon -r tsconfig-paths/register src/auth-server/server.ts",
-    "dev:all": "concurrently -n \"API,AUTH,FRONTEND\" -c \"cyan,magenta,green\" \"npm run dev\" \"npm run dev:auth\" \"npm run dev:frontend\"",
     "dev:frontend": "cd ../ecommerce-frontend && npm run dev",
+    "dev:admin": "cd ../ecommerce-admin && npm run dev",
+    "dev:tauri": "cd ../ecommerce-admin && npm run tauri dev",
+    "dev:all": "concurrently -n \"API,AUTH,SHOP,ADMIN,TAURI\" -c \"cyan,magenta,green,blue,yellow\" \"npm run dev\" \"npm run dev:auth\" \"npm run dev:frontend\" \"npm run dev:admin\" \"npm run dev:tauri\"",
     "build": "tsc",
     "start": "node -r tsconfig-paths/register dist/api-server/server.js",
     "start:auth": "node -r tsconfig-paths/register dist/auth-server/server.js",

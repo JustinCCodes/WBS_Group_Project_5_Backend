@@ -26,7 +26,17 @@ export const requireAuth = async (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies?.accessToken;
+  // Accept token from cookie OR Authorization header (Bearer)
+  let token = req.cookies?.accessToken as string | undefined;
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+
+  if (
+    !token &&
+    typeof authHeader === "string" &&
+    authHeader.startsWith("Bearer ")
+  ) {
+    token = authHeader.split(" ")[1];
+  }
 
   if (!token) {
     return res

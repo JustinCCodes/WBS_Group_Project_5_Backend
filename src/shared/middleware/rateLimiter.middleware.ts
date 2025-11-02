@@ -3,7 +3,7 @@ import rateLimit from "express-rate-limit";
 // Rate limiter for login attempts
 export const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200, // Limits each IP to 5 login requests per window
+  max: 5, // Limits each IP to 5 login requests per window
   message:
     "Too many login attempts from this IP, please try again after 15 minutes.",
   standardHeaders: true, // Returns rate limit info in the `RateLimit-*` headers
@@ -24,7 +24,7 @@ export const registerLimiter = rateLimit({
 // Rate limiter for token refresh
 export const refreshLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limits each IP to 10 refresh requests per window
+  max: 30, // Limits each IP to 30 refresh requests per window
   message: "Too many token refresh attempts, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,

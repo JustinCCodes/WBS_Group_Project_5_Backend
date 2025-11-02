@@ -21,7 +21,16 @@ export const login = async (
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email }).select("+password");
+    let user = await User.findOne({ email }).select(
+      "+password failedLoginAttempts lockUntil lastFailedLogin"
+    );
+
+    // Check if account is locked
+    if (user && user.lockUntil && user.lockUntil > new Date()) {
+      return res
+        .status(423)
+        .json({ error: "Account locked. Try again later." });
+    }
 
     // Always runs bcrypt comparison to prevent timing attacks
     // If user doesn't exist compares against dummy
@@ -30,7 +39,36 @@ export const login = async (
       : await bcrypt.compare(password, DUMMY_BCRYPT_HASH);
 
     if (!user || !isValidPassword) {
+      // If user exists increment failed attempts and set lockout if threshold reached
+      if (user) {
+        const now = new Date();
+        const attempts = (user.failedLoginAttempts || 0) + 1;
+        const lockThreshold = 5; // attempts before lock
+
+        let lockUntil = user.lockUntil;
+        if (attempts >= lockThreshold) {
+          const backoffMinutes = Math.min(
+            60,
+            Math.pow(2, attempts - lockThreshold)
+          );
+          lockUntil = new Date(Date.now() + backoffMinutes * 60 * 1000);
+        }
+
+        await User.findByIdAndUpdate(user._id, {
+          failedLoginAttempts: attempts,
+          lastFailedLogin: now,
+          lockUntil,
+        });
+      }
+
       return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    // Refetch user with all fields for response
+    user = await User.findById(user._id);
+    if (!user) {
+      // Should never happen, but guard for safety
+      return res.status(500).json({ error: "User not found after login." });
     }
 
     const accessTokenPayload = { userId: user.id, role: user.role };
@@ -60,6 +98,13 @@ export const login = async (
       Date.now() + parseInt(env.JWT_REFRESH_COOKIE_MAX_AGE)
     ); // Calculates expiry date
 
+    // Reset failed login counters on successful login
+    await User.findByIdAndUpdate(user._id, {
+      failedLoginAttempts: 0,
+      lockUntil: undefined,
+      lastFailedLogin: undefined,
+    });
+
     // Removes old tokens for user before adding new one
     await RefreshToken.deleteMany({ userId: user._id });
 
@@ -70,6 +115,18 @@ export const login = async (
     });
 
     sendTokens(res, accessToken, refreshToken);
+
+    // If request indicates a desktop grant, verify it's from admin and return access token
+    const grantType = req.body?.grant_type || req.headers["x-grant-type"];
+    if (grantType === "desktop") {
+      // Only allow desktop grant for admin users
+      if (user.role !== "admin") {
+        return res.status(403).json({
+          error: "Desktop authentication is only available for admin users",
+        });
+      }
+      return res.status(200).json({ user: user.toJSON(), accessToken });
+    }
 
     res.status(200).json({
       user: user.toJSON(),
@@ -85,15 +142,30 @@ export const refresh = async (
   res: Response,
   next: NextFunction
 ) => {
-  const refreshTokenFromCookie = req.cookies?.refreshToken;
+  // Determine if this is a desktop grant
+  const grantType = req.body?.grant_type || req.headers["x-grant-type"];
+  const isDesktop = grantType === "desktop";
 
-  if (!refreshTokenFromCookie) {
+  // Prefer cookie for web; for desktop accept Authorization: Bearer <refreshToken> or body.refreshToken
+  const cookieRefreshToken = req.cookies?.refreshToken;
+  let incomingRefreshToken: string | undefined = cookieRefreshToken;
+
+  if (isDesktop) {
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+    if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
+      incomingRefreshToken = authHeader.split(" ")[1];
+    } else if (req.body?.refreshToken) {
+      incomingRefreshToken = req.body.refreshToken;
+    }
+  }
+
+  if (!incomingRefreshToken) {
     return res.status(401).json({ error: "Refresh token not found." });
   }
 
   try {
     // Verifies JWT signature
-    const decoded = jwt.verify(refreshTokenFromCookie, env.JWT_SECRET) as {
+    const decoded = jwt.verify(incomingRefreshToken, env.JWT_SECRET) as {
       userId: string;
     };
 
@@ -104,7 +176,7 @@ export const refresh = async (
     for (const tokenDoc of potentialTokens) {
       // Compares the received token with the stored hash
       const isValid = await bcrypt.compare(
-        refreshTokenFromCookie,
+        incomingRefreshToken,
         tokenDoc.tokenHash
       );
       if (isValid) {
@@ -115,8 +187,8 @@ export const refresh = async (
 
     // If no match in DB or token expired
     if (!dbTokenRecord || dbTokenRecord.expiresAt < new Date()) {
-      // Clears potential invalid cookie
-      clearAuthCookies(res);
+      // For web flows clear cookies, desktop clients don't have cookies
+      if (!isDesktop) clearAuthCookies(res);
       // Attempts to delete from DB if found but expired
       if (dbTokenRecord)
         await RefreshToken.findByIdAndDelete(dbTokenRecord._id);
@@ -170,26 +242,35 @@ export const refresh = async (
       expiresAt: newExpiresAt,
     });
 
-    // Sends new access and refresh tokens via cookies
+    // For desktop clients return tokens in JSON (no cookies)
+    if (isDesktop) {
+      return res
+        .status(200)
+        .json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+    }
+
+    // Sends new access and refresh tokens via cookies for web clients
     sendTokens(res, newAccessToken, newRefreshToken);
 
-    res.status(200).json({
-      accessToken: newAccessToken,
-    });
+    res.status(200).json({ accessToken: newAccessToken });
   } catch (error) {
-    clearAuthCookies(res);
+    // Only clear cookies for web flows
+    const grantTypeForError =
+      req.body?.grant_type || req.headers["x-grant-type"];
+    const wasDesktop = grantTypeForError === "desktop";
+    if (!wasDesktop) clearAuthCookies(res);
     if (
       error instanceof jwt.TokenExpiredError ||
       error instanceof jwt.JsonWebTokenError
     ) {
       // Tries to delete potential invalid/expired token hash from DB
       try {
-        const decodedForDelete = jwt.decode(refreshTokenFromCookie) as {
+        const decodedForDelete = jwt.decode(incomingRefreshToken) as {
           userId: string;
         } | null;
         if (decodedForDelete?.userId) {
           await findAndDeleteRefreshToken(
-            refreshTokenFromCookie,
+            incomingRefreshToken,
             decodedForDelete.userId
           );
         }

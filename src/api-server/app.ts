@@ -1,24 +1,23 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import mongoose from "mongoose";
 import { env } from "@shared/config/env";
 import { errorHandler } from "@shared/middleware/errorHandler.middleware";
-import { requireAuth, isAdmin } from "@shared/middleware/auth.middleware";
 import {
   userRouter,
   categoryRouter,
   productRouter,
   orderRouter,
   adminRouter,
+  healthRouter,
 } from "./routes";
 
 const app: Express = express();
 
 const allowedOrigins = [
   env.CORS_ORIGIN, // Shop frontend (e.g., http://localhost:3000)
-  env.ADMIN_CORS_ORIGIN, // Admin app (e.g., http://localhost:3002)
-  "tauri://localhost", // Tauri desktop app origin
+  "http://localhost:3002", // Admin dashboard (dev mode)
+  "tauri://localhost", // Tauri desktop app (production build)
 ];
 
 // CORS configuration with credentials for cookie support
@@ -47,36 +46,8 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" })); // Limits request body size to prevent DoS
 app.use(cookieParser());
 
-// Test Route
-app.get("/", (req: Request, res: Response) => {
-  res.json({ message: "Welcome to the eCommerce API!" });
-});
-
-// Health Check Endpoint (Admin)
-app.get("/health", requireAuth, isAdmin, (req: Request, res: Response) => {
-  const dbStatus =
-    mongoose.connection.readyState === 1 ? "connected" : "disconnected";
-
-  const statusCode = dbStatus === "connected" ? 200 : 503;
-
-  // Returns minimal info in production to avoid information leakage
-  if (env.NODE_ENV === "production") {
-    return res.status(statusCode).json({
-      status: dbStatus === "connected" ? "ok" : "unhealthy",
-    });
-  }
-
-  // Detailed info for development/testing
-  const health = {
-    status: "ok",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: env.NODE_ENV,
-    database: dbStatus,
-  };
-
-  res.status(statusCode).json(health);
-});
+// Health Check Routes
+app.use("/health", healthRouter);
 
 // API ROUTES
 const apiBasePath = "/api/v1";

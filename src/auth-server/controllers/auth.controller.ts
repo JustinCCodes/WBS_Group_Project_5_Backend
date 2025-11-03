@@ -9,7 +9,7 @@ import {
 } from "@shared/utils/helper";
 import { env } from "@shared/config/env";
 
-// Pre computed dummy for timing attack prevention
+// Dummy for timing attack prevention
 const DUMMY_BCRYPT_HASH = bcrypt.hashSync("invalid_password_dummy", 12);
 
 // Login Controller
@@ -25,7 +25,7 @@ export const login = async (
       "+password failedLoginAttempts lockUntil lastFailedLogin"
     );
 
-    // Check if account is locked
+    // Checks if account is locked
     if (user && user.lockUntil && user.lockUntil > new Date()) {
       return res
         .status(423)
@@ -33,13 +33,13 @@ export const login = async (
     }
 
     // Always runs bcrypt comparison to prevent timing attacks
-    // If user doesn't exist compares against dummy
+    // If user doesnt exist compares against dummy
     const isValidPassword = user
       ? await user.comparePassword(password)
       : await bcrypt.compare(password, DUMMY_BCRYPT_HASH);
 
     if (!user || !isValidPassword) {
-      // If user exists increment failed attempts and set lockout if threshold reached
+      // If user exists increment failed attempts and set lockout if needed
       if (user) {
         const now = new Date();
         const attempts = (user.failedLoginAttempts || 0) + 1;
@@ -64,16 +64,18 @@ export const login = async (
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // Refetch user with all fields for response
+    // Refetches user with all fields for response
     user = await User.findById(user._id);
     if (!user) {
-      // Should never happen, but guard for safety
+      // Should never happen but guard for safety
       return res.status(500).json({ error: "User not found after login." });
     }
 
+    // Generates tokens
     const accessTokenPayload = { userId: user.id, role: user.role };
     const refreshTokenPayload = { userId: user.id };
 
+    // Token options
     const accessTokenOptions = {
       expiresIn: env.JWT_EXPIRES_IN,
     } as SignOptions;
@@ -81,11 +83,13 @@ export const login = async (
       expiresIn: env.JWT_REFRESH_EXPIRES_IN,
     } as SignOptions;
 
+    // Signs tokens
     const accessToken = jwt.sign(
       accessTokenPayload,
       env.JWT_SECRET,
       accessTokenOptions
     );
+    // Signs refresh token
     const refreshToken = jwt.sign(
       refreshTokenPayload,
       env.JWT_SECRET,
@@ -108,12 +112,14 @@ export const login = async (
     // Removes old tokens for user before adding new one
     await RefreshToken.deleteMany({ userId: user._id });
 
+    // Creates new refresh token record
     await RefreshToken.create({
       userId: user._id,
       tokenHash: refreshTokenHash, // Stores the hash
       expiresAt,
     });
 
+    // Sends tokens via cookies
     sendTokens(res, accessToken, refreshToken);
 
     // If request indicates a desktop grant, verify it's from admin and return access token
@@ -128,6 +134,7 @@ export const login = async (
       return res.status(200).json({ user: user.toJSON(), accessToken });
     }
 
+    // Sends user data in response
     res.status(200).json({
       user: user.toJSON(),
     });
@@ -142,23 +149,27 @@ export const refresh = async (
   res: Response,
   next: NextFunction
 ) => {
-  // Determine if this is a desktop grant
+  // Determines if this is a desktop grant
   const grantType = req.body?.grant_type || req.headers["x-grant-type"];
   const isDesktop = grantType === "desktop";
 
-  // Prefer cookie for web; for desktop accept Authorization: Bearer <refreshToken> or body.refreshToken
+  // Prefer cookie for web and for desktop accept authorization bearer <refreshToken> or body.refreshToken
   const cookieRefreshToken = req.cookies?.refreshToken;
   let incomingRefreshToken: string | undefined = cookieRefreshToken;
 
   if (isDesktop) {
+    // Check authorization header first
     const authHeader = req.headers.authorization || req.headers.Authorization;
+    // Then check body
     if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
       incomingRefreshToken = authHeader.split(" ")[1];
+      // Fallback to body if not in header
     } else if (req.body?.refreshToken) {
       incomingRefreshToken = req.body.refreshToken;
     }
   }
 
+  // If no refresh token found
   if (!incomingRefreshToken) {
     return res.status(401).json({ error: "Refresh token not found." });
   }

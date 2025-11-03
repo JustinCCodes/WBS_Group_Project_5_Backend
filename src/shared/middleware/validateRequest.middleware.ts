@@ -1,6 +1,22 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodType, ZodError } from "zod";
 
+// Interface for validated request data
+interface ValidatedData {
+  body?: Record<string, unknown>;
+  query?: Record<string, unknown>;
+  params?: Record<string, unknown>;
+}
+
+// Extends Express Request interface to include validated data
+declare global {
+  namespace Express {
+    interface Request {
+      validated?: ValidatedData;
+    }
+  }
+}
+
 // Middleware that validates request data against Zod schema
 export const validateRequest =
   (schema: ZodType) => (req: Request, res: Response, next: NextFunction) => {
@@ -9,17 +25,18 @@ export const validateRequest =
         body: req.body,
         query: req.query,
         params: req.params,
-      }) as { body?: any; query?: any; params?: any };
+      }) as ValidatedData;
 
       // Stores validated data in a custom property and also try to update originals
-      (req as any).validated = validated;
+      req.validated = validated;
 
       // Tries to update individual properties
       try {
         if (validated.query !== undefined) {
           for (const key in validated.query) {
             if (Object.prototype.hasOwnProperty.call(validated.query, key)) {
-              (req.query as any)[key] = validated.query[key];
+              (req.query as Record<string, unknown>)[key] =
+                validated.query[key];
             }
           }
         }
@@ -27,7 +44,7 @@ export const validateRequest =
         if (validated.body !== undefined) {
           for (const key in validated.body) {
             if (Object.prototype.hasOwnProperty.call(validated.body, key)) {
-              (req.body as any)[key] = validated.body[key];
+              (req.body as Record<string, unknown>)[key] = validated.body[key];
             }
           }
         }
@@ -35,7 +52,8 @@ export const validateRequest =
         if (validated.params !== undefined) {
           for (const key in validated.params) {
             if (Object.prototype.hasOwnProperty.call(validated.params, key)) {
-              (req.params as any)[key] = validated.params[key];
+              (req.params as Record<string, unknown>)[key] =
+                validated.params[key];
             }
           }
         }

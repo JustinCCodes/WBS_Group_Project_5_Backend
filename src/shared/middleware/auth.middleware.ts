@@ -11,7 +11,7 @@ interface JwtPayload {
   exp?: number;
 }
 
-// Extends express request interface to include the user property
+// Adds user info to Request interface
 declare global {
   namespace Express {
     interface Request {
@@ -20,13 +20,13 @@ declare global {
   }
 }
 
-// Verifies JWT Access Token from cookies
+// Verifies JWT Access Token from request cookies
 export const requireAuth = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  // Accept token from cookie OR Authorization header (Bearer)
+  // Accept token from cookie or authorization header (Bearer)
   let token = req.cookies?.accessToken as string | undefined;
   const authHeader = req.headers.authorization || req.headers.Authorization;
 

@@ -27,7 +27,6 @@ const envSchema = z.object({
 
   // CORS
   CORS_ORIGIN: z.string().default("http://localhost:3000"),
-  ADMIN_CORS_ORIGIN: z.string().default("http://localhost:3002"),
 
   // Cloudinary
   CLOUDINARY_CLOUD_NAME: z.string().optional(),

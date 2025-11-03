@@ -65,30 +65,3 @@ export const adminGetOrdersSchema = z.object({
     })
     .partial(),
 });
-
-// Test Order Schemas
-export const createTestOrderSchema = z.object({
-  body: orderBaseSchema.extend({
-    userId: objectIdSchema,
-    status: z
-      .enum(["pending", "processing", "shipped", "cancelled"])
-      .optional(),
-  }),
-});
-
-// Schema for updating a test order
-export const getTestOrdersSchema = z.object({
-  query: paginationQuerySchema
-    .extend({
-      userId: objectIdSchema.optional(),
-      status: z
-        .enum(["pending", "processing", "shipped", "cancelled"])
-        .optional(),
-    })
-    .partial(),
-});
-
-// Schema for getting a test order by ID
-export const deleteTestOrderSchema = z.object({
-  params: paramsWithIdSchema,
-});

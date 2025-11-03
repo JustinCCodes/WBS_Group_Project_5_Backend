@@ -12,9 +12,9 @@ const authApp: Express = express();
 // Middleware Setup
 // CORS configuration with credentials for cookie support
 const allowedOrigins = [
-  env.CORS_ORIGIN, // Shop frontend (e.g., http://localhost:3000)
-  env.ADMIN_CORS_ORIGIN, // Admin app (e.g., http://localhost:3002)
-  "tauri://localhost", // Tauri desktop app origin
+  env.CORS_ORIGIN, // Shop frontend
+  "http://localhost:3002", // Admin dashboard (dev mode)
+  "tauri://localhost", // Tauri desktop app
 ];
 
 const corsOptions = {
@@ -40,11 +40,6 @@ const corsOptions = {
 authApp.use(cors(corsOptions));
 authApp.use(express.json({ limit: "10mb" }));
 authApp.use(cookieParser());
-
-// Test Route
-authApp.get("/", (req: Request, res: Response) => {
-  res.json({ message: "Welcome to the Authentication Server!" });
-});
 
 // Health Check Endpoint (Admin)
 authApp.get("/health", requireAuth, isAdmin, (req: Request, res: Response) => {

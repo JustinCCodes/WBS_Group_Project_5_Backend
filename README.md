@@ -86,7 +86,8 @@ Edit `.env` and fill in your values:
 NODE_ENV=development
 PORT=8000                # Main API server port
 AUTH_PORT=8001          # Authentication server port
-CORS_ORIGIN=http://localhost:3000  # Frontend URL for CORS
+CORS_ORIGIN=http://localhost:3000             # Customer frontend URL for CORS
+ADMIN_CORS_ORIGIN=http://localhost:3002       # Admin dashboard URL for CORS
 
 # Database
 MONGO_URI="mongodb+srv://username:password@cluster.mongodb.net/ecommerce?retryWrites=true&w=majority"
@@ -108,6 +109,8 @@ CLOUDINARY_API_SECRET="your_cloudinary_api_secret"
 
 - `JWT_SECRET` must be at least 32 characters for security
 - Cloudinary credentials are required for product image management
+- `ADMIN_CORS_ORIGIN` is required for the admin dashboard to communicate with the API
+- Tauri desktop app uses `tauri://localhost` origin (automatically configured)
 - Keep `.env` file secure and never commit it to version control
 
 ### 4. Run the development servers
@@ -431,8 +434,15 @@ In your Vercel project dashboard, add all environment variables from `.env`:
 
 - `MONGO_URI`
 - `JWT_SECRET`
-- `CORS_ORIGIN`
-- etc.
+- `JWT_EXPIRES_IN`
+- `JWT_REFRESH_EXPIRES_IN`
+- `JWT_ACCESS_COOKIE_MAX_AGE`
+- `JWT_REFRESH_COOKIE_MAX_AGE`
+- `CORS_ORIGIN` (customer frontend URL)
+- `ADMIN_CORS_ORIGIN` (admin dashboard URL)
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
 
 ### 3. Deploy
 
@@ -610,7 +620,9 @@ curl http://localhost:8000/api/v1/users/me \
 
 **CORS Errors**
 
-- Verify `CORS_ORIGIN` in `.env` matches your frontend URL
+- Verify `CORS_ORIGIN` matches your customer frontend URL (default: http://localhost:3000)
+- Verify `ADMIN_CORS_ORIGIN` matches your admin dashboard URL (default: http://localhost:3002)
+- For Tauri desktop app, `tauri://localhost` is automatically whitelisted
 - Check that credentials are being sent from frontend
 - Ensure both servers are running
 
@@ -633,9 +645,11 @@ curl http://localhost:8000/api/v1/users/me \
 
 **Dev:all Script Errors**
 
-- Ensure frontend/admin directories exist in parent directory
+- Ensure frontend/admin directories exist in parent directory (`../ecommerce-frontend` and `../ecommerce-admin`)
 - Check that all dependencies are installed in each project
+- For Tauri, ensure Rust toolchain and Tauri CLI are installed
 - Run services individually to isolate issues
+- Use `npm run dev` and `npm run dev:auth` to test backend servers independently
 
 ## �📄 License
 

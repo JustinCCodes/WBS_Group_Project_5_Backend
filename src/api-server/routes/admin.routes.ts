@@ -1,7 +1,6 @@
 import { Router } from "express";
 import * as adminUserController from "../controllers/admin.user.controller";
 import * as adminOrderController from "../controllers/admin.order.controller";
-import * as adminTestOrderController from "../controllers/admin.testOrder.controller";
 import * as adminCategoryController from "../controllers/admin.category.controller";
 import * as adminProductController from "../controllers/admin.product.controller";
 import { validateRequest, requireAuth, isAdmin } from "@shared/middleware";
@@ -18,9 +17,6 @@ import {
   unbanUserSchema,
   searchUsersSchema,
   getAllUsersSchema,
-  createTestOrderSchema,
-  getTestOrdersSchema,
-  deleteTestOrderSchema,
   featureProductSchema,
   unfeatureProductSchema,
   updateStockSchema,
@@ -98,25 +94,6 @@ router.delete(
   validateRequest(deleteOrderSchema),
   requireCsrfToken,
   adminOrderController.deleteOrder
-);
-
-// Admin Test Order Management
-router.post(
-  "/test-orders",
-  validateRequest(createTestOrderSchema),
-  requireCsrfToken,
-  adminTestOrderController.createTestOrder
-);
-router.get(
-  "/test-orders",
-  validateRequest(getTestOrdersSchema),
-  adminTestOrderController.getTestOrders
-);
-router.delete(
-  "/test-orders/:id",
-  validateRequest(deleteTestOrderSchema),
-  requireCsrfToken,
-  adminTestOrderController.deleteTestOrder
 );
 
 // Admin Product Management - Featured Products

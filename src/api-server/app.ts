@@ -51,7 +51,7 @@ app.use(cookieParser());
 app.use("/health", healthRouter);
 
 // API ROUTES
-const apiBasePath = "/api/v1";
+const apiBasePath = "/v1";
 
 app.use(`${apiBasePath}/`, (req, res) => {
   res.send("API v1");

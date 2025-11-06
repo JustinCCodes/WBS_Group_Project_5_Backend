@@ -53,6 +53,9 @@ app.use("/health", healthRouter);
 // API ROUTES
 const apiBasePath = "/api/v1";
 
+app.use(`${apiBasePath}/`, (req, res) => {
+  res.send("API v1");
+});
 app.use(`${apiBasePath}/auth`, authRouter);
 app.use(`${apiBasePath}/users`, userRouter);
 app.use(`${apiBasePath}/categories`, categoryRouter);

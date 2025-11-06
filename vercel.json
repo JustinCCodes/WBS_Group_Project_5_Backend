@@ -2,10 +2,10 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/data.js",
+      "src": "api/data.ts",
       "use": "@vercel/node",
       "config": { "maxLambdaSize": "50mb" }
     }
   ],
-  "routes": [{ "src": "/api/(.*)", "dest": "api/data.js" }]
+  "routes": [{ "src": "/api/(.*)", "dest": "api/data.ts" }]
 }

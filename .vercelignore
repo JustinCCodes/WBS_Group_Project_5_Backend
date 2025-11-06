@@ -15,6 +15,7 @@ node_modules/
 
 readme.md
 \*.md
+!README.md
 
 # Don't upload OS files
 

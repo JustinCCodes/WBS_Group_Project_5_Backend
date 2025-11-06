@@ -1,13 +1,11 @@
 {
   "version": 2,
-  "installCommand": "npm install && npm run build",
   "builds": [
     {
       "src": "api/index.js",
       "use": "@vercel/node",
       "config": {
-        "maxLambdaSize": "50mb",
-        "includeFiles": ["dist/**"]
+        "maxLambdaSize": "50mb"
       }
     }
   ],

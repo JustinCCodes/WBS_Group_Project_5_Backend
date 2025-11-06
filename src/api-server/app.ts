@@ -15,10 +15,15 @@ import { authRouter } from "../auth-server/routes";
 
 const app: Express = express();
 
+// Trust proxy to 1 to trust first proxy (Vercel)
+// Required for express-rate-limit to work correctly on Vercel
+app.set("trust proxy", 1);
+
 const allowedOrigins = [
-  env.CORS_ORIGIN, // Shop frontend (e.g., http://localhost:3000)
+  env.CORS_ORIGIN, // Shop frontend
   "http://localhost:3002", // Admin dashboard (dev mode)
   "tauri://localhost", // Tauri desktop app (production build)
+  "https://ecommerce-project-justinccodes-frontend.vercel.app", // Frontend URL
 ];
 
 // CORS configuration with credentials for cookie support
@@ -34,13 +39,19 @@ const corsOptions = {
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true); // Origin is allowed
     } else {
-      callback(new Error("Not allowed by CORS")); // Origin is not allowed
+      // If in development also allow the default Vercel frontend URL
+      if (
+        env.NODE_ENV !== "production" &&
+        origin.includes("ecommerce-project-justinccodes-frontend")
+      ) {
+        return callback(null, true);
+      }
+      callback(new Error(`Not allowed by CORS: ${origin}`)); // Origin is not allowed
     }
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "Cookie", "X-CSRF-Token"],
-  // exposedHeaders removed for Set-Cookie (not necessary)
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));

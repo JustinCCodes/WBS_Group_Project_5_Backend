@@ -5,7 +5,21 @@
       "src": "api/data.ts",
       "use": "@vercel/node",
       "config": { "maxLambdaSize": "50mb" }
+    },
+    {
+      "src": "api/auth.ts",
+      "use": "@vercel/node",
+      "config": { "maxLambdaSize": "50mb" }
     }
   ],
-  "routes": [{ "src": "/api/(.*)", "dest": "api/data.ts" }]
+  "routes": [
+    {
+      "src": "/api/v1/(.*)",
+      "dest": "api/data.ts"
+    },
+    {
+      "src": "/api/auth/(.*)",
+      "dest": "api/auth.ts"
+    }
+  ]
 }

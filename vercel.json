@@ -6,7 +6,7 @@
       "use": "@vercel/node",
       "config": {
         "maxLambdaSize": "50mb",
-        "includeFiles": ["dist/**"]
+        "includeFiles": ["src/**", "tsconfig.json"]
       }
     }
   ],

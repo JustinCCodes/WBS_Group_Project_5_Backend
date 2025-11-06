@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from "express";
-import { User, RefreshToken } from "@shared/models";
 import jwt, { SignOptions } from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import { User, RefreshToken } from "../../shared/models";
 import {
   sendTokens,
   clearAuthCookies,
   findAndDeleteRefreshToken,
-} from "@shared/utils/helper";
-import { env } from "@shared/config/env";
+} from "../../shared/utils/helper";
+import { env } from "../../shared/config/env";
 
 // Dummy for timing attack prevention
 const DUMMY_BCRYPT_HASH = bcrypt.hashSync("invalid_password_dummy", 12);

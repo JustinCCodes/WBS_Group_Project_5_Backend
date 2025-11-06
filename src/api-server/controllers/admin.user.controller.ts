@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { User, RefreshToken } from "@shared/models";
+import { User, RefreshToken } from "../../shared/models";
 import mongoose from "mongoose";
-import { paginate } from "@shared/utils/helper";
+import { paginate } from "../../shared/utils/helper";
 
 // Get All Users
 // GET /api/v1/admin/users

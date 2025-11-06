@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { Order } from "@shared/models";
+import { Order } from "../../shared/models";
 import mongoose from "mongoose";
 import {
   calculateOrderTotal,
   paginate,
   restoreStock,
-} from "@shared/utils/helper";
+} from "../../shared/utils/helper";
 
 // Interface for order filter query
 interface OrderFilterQuery {

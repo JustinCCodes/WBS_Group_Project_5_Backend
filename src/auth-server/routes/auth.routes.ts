@@ -4,8 +4,8 @@ import {
   validateRequest,
   loginLimiter,
   refreshLimiter,
-} from "@shared/middleware";
-import { loginSchema } from "@shared/schemas";
+} from "../../shared/middleware";
+import { loginSchema } from "../../shared/schemas";
 
 const router = Router();
 

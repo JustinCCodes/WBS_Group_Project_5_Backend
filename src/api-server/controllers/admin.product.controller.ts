@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import Product from "@shared/models/product.model";
+import Product from "../../shared/models/product.model";
 
 // Mark Product as Featured
 // PUT /api/v1/admin/products/:id/feature

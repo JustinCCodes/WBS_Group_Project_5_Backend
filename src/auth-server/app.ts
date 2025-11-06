@@ -2,9 +2,9 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
-import { env } from "@shared/config/env";
-import { errorHandler } from "@shared/middleware/errorHandler.middleware";
-import { requireAuth, isAdmin } from "@shared/middleware/auth.middleware";
+import { env } from "../shared/config/env";
+import { errorHandler } from "../shared/middleware/errorHandler.middleware";
+import { requireAuth, isAdmin } from "../shared/middleware/auth.middleware";
 import authRouter from "./routes/auth.routes";
 
 const authApp: Express = express();

@@ -1,8 +1,8 @@
 import express, { Express } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { env } from "@shared/config/env";
-import { errorHandler } from "@shared/middleware/errorHandler.middleware";
+import { env } from "../shared/config/env";
+import { errorHandler } from "../shared/middleware/errorHandler.middleware";
 import {
   userRouter,
   categoryRouter,
@@ -11,7 +11,7 @@ import {
   adminRouter,
   healthRouter,
 } from "./routes";
-import { authRouter } from "@auth/routes";
+import { authRouter } from "../auth-server/routes";
 
 const app: Express = express();
 

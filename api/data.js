@@ -4,7 +4,7 @@ try {
   const app =
     require("../dist/src/api-server/app").default ||
     require("../dist/src/api-server/app");
-  const { connectDB } = require("../dist/src/shared/db");
+  const { connectDB } = require("./dist/src/shared/db");
   connectDB().catch((err) => {
     console.error("Failed to connect to database:", err);
   });

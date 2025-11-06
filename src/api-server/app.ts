@@ -11,6 +11,7 @@ import {
   adminRouter,
   healthRouter,
 } from "./routes";
+import { authRouter } from "@auth/routes";
 
 const app: Express = express();
 
@@ -52,6 +53,7 @@ app.use("/health", healthRouter);
 // API ROUTES
 const apiBasePath = "/api/v1";
 
+app.use(`${apiBasePath}/auth`, authRouter);
 app.use(`${apiBasePath}/users`, userRouter);
 app.use(`${apiBasePath}/categories`, categoryRouter);
 app.use(`${apiBasePath}/products`, productRouter);

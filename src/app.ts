@@ -24,7 +24,7 @@ app.use(cookieParser());
 app.use("/health", healthRouter);
 
 // API ROUTES
-const apiBasePath = "/api/v1";
+const apiBasePath = "/v1";
 
 // Mount routers
 app.use(`${apiBasePath}/users`, userRouter);

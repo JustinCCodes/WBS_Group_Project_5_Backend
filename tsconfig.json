@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "CommonJS",
-    "rootDir": "./src",
+    "rootDir": ".",
     "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -10,13 +10,13 @@
     "noUnusedLocals": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "paths": {
-      "@shared/*": ["shared/*"],
-      "@api/*": ["api-server/*"],
-      "@auth/*": ["auth-server/*"]
+      "@shared/*": ["src/shared/*"],
+      "@api/*": ["src/api-server/*"],
+      "@auth/*": ["src/auth-server/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "api/**/*"],
   "exclude": ["node_modules"]
 }

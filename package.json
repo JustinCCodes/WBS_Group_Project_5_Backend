@@ -12,6 +12,7 @@
     "build": "tsc",
     "start": "node -r tsconfig-paths/register dist/api-server/server.js",
     "start:auth": "node -r tsconfig-paths/register dist/auth-server/server.js",
+    "vercel-build": "echo 'Building TypeScript...' && tsc && echo 'Build complete!'",
     "start:all": "concurrently -n \"API,AUTH\" -c \"cyan,magenta\" \"npm run start\" \"npm run start:auth\""
   },
   "keywords": [],

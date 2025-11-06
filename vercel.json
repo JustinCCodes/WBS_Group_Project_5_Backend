@@ -5,15 +5,7 @@
       "src": "api/data.js",
       "use": "@vercel/node",
       "config": { "maxLambdaSize": "50mb" }
-    },
-    {
-      "src": "api/auth.js",
-      "use": "@vercel/node",
-      "config": { "maxLambdaSize": "50mb" }
     }
   ],
-  "routes": [
-    { "src": "/api/data/(.*)", "dest": "api/data.js" },
-    { "src": "/api/auth/(.*)", "dest": "api/auth.js" }
-  ]
+  "routes": [{ "src": "/api/(.*)", "dest": "api/data.js" }]
 }

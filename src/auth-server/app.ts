@@ -68,7 +68,7 @@ authApp.get("/health", requireAuth, isAdmin, (req: Request, res: Response) => {
 });
 
 // Authentication Routes
-const apiBasePath = "/api/v1";
+const apiBasePath = "/v1";
 authApp.use(`${apiBasePath}/auth`, authRouter);
 
 // Global Error Handler

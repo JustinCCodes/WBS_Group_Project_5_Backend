@@ -9,8 +9,8 @@ import {
   validateRequest,
   requireAuth,
   registerLimiter,
-} from "@shared/middleware";
-import { registerUserSchema, updateMeSchema } from "@shared/schemas";
+} from "../../shared/middleware";
+import { registerUserSchema, updateMeSchema } from "../../shared/schemas";
 
 const router = Router();
 

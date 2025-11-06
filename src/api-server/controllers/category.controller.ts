@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { Category, Product } from "@shared/models";
+import { Category, Product } from "../../shared/models";
 import mongoose from "mongoose";
 
 // Get All Categories (Public endpoint - minimal data)

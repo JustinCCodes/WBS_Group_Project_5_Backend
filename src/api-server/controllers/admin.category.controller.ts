@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { Category } from "@shared/models";
+import { Category } from "../../shared/models";
 
 // Admin Get All Categories (Admin endpoint - full data with metadata)
 // GET /api/v1/admin/categories

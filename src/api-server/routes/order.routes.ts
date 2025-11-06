@@ -6,15 +6,15 @@ import {
   updateOrder,
   deleteOrder,
 } from "../controllers/order.controller";
-import { validateRequest, requireAuth } from "@shared/middleware";
-import requireCsrfToken from "@shared/middleware/csrf.middleware";
+import { validateRequest, requireAuth } from "../../shared/middleware";
+import requireCsrfToken from "../../shared/middleware/csrf.middleware";
 import {
   createOrderSchema,
   updateOrderSchema,
   getOrderSchema,
   deleteOrderSchema,
   getOrdersSchema,
-} from "@shared/schemas";
+} from "../../shared/schemas";
 
 const router = Router();
 

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { Product, Category, Order } from "@shared/models";
+import { Product, Category, Order } from "../../shared/models";
 import mongoose from "mongoose";
-import { paginate, deleteImageFromCloudinary } from "@shared/utils/helper";
+import { paginate, deleteImageFromCloudinary } from "../../shared/utils/helper";
 
 // Get All Products
 // GET /api/v1/products

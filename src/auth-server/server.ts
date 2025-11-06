@@ -1,6 +1,6 @@
 import authApp from "./app";
-import { connectDB } from "@shared/db";
-import { env } from "@shared/config/env";
+import { connectDB } from "../shared/db";
+import { env } from "../shared/config/env";
 
 const AUTH_PORT = env.AUTH_PORT || 8001;
 

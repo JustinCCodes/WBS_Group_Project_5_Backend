@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import mongoose from "mongoose";
-import { env } from "@shared/config/env";
-import { requireAuth, isAdmin } from "@shared/middleware";
+import { env } from "../../shared/config/env";
+import { requireAuth, isAdmin } from "../../shared/middleware";
 
 const router = Router();
 

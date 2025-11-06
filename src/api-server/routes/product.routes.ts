@@ -6,15 +6,15 @@ import {
   updateProduct,
   deleteProduct,
 } from "../controllers/product.controller";
-import { validateRequest, requireAuth, isAdmin } from "@shared/middleware";
-import requireCsrfToken from "@shared/middleware/csrf.middleware";
+import { validateRequest, requireAuth, isAdmin } from "../../shared/middleware";
+import requireCsrfToken from "../../shared/middleware/csrf.middleware";
 import {
   createProductSchema,
   updateProductSchema,
   getProductSchema,
   deleteProductSchema,
   getProductsSchema,
-} from "@shared/schemas";
+} from "../../shared/schemas";
 
 const router = Router();
 

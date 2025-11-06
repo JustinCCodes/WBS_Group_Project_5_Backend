@@ -6,13 +6,13 @@ import {
   updateCategory,
   deleteCategory,
 } from "../controllers/category.controller";
-import { validateRequest, requireAuth, isAdmin } from "@shared/middleware";
+import { validateRequest, requireAuth, isAdmin } from "../../shared/middleware";
 import {
   createCategorySchema,
   updateCategorySchema,
   getCategorySchema,
   deleteCategorySchema,
-} from "@shared/schemas";
+} from "../../shared/schemas";
 
 const router = Router();
 

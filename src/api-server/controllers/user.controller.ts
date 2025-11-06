@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { User, RefreshToken } from "@shared/models";
-import { clearAuthCookies } from "@shared/utils/helper";
+import { User, RefreshToken } from "../../shared/models";
+import { clearAuthCookies } from "../../shared/utils/helper";
 
 // Register User
 // POST /api/v1/users

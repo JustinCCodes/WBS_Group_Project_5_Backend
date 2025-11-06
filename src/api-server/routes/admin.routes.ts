@@ -3,8 +3,8 @@ import * as adminUserController from "../controllers/admin.user.controller";
 import * as adminOrderController from "../controllers/admin.order.controller";
 import * as adminCategoryController from "../controllers/admin.category.controller";
 import * as adminProductController from "../controllers/admin.product.controller";
-import { validateRequest, requireAuth, isAdmin } from "@shared/middleware";
-import requireCsrfToken from "@shared/middleware/csrf.middleware";
+import { validateRequest, requireAuth, isAdmin } from "../../shared/middleware";
+import requireCsrfToken from "../../shared/middleware/csrf.middleware";
 import {
   adminUpdateUserSchema,
   adminUpdateOrderSchema,
@@ -21,7 +21,7 @@ import {
   unfeatureProductSchema,
   updateStockSchema,
   getLowStockSchema,
-} from "@shared/schemas";
+} from "../../shared/schemas";
 
 const router = Router();
 

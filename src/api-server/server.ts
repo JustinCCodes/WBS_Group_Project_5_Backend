@@ -1,6 +1,6 @@
 import app from "./app";
-import { connectDB } from "@shared/db";
-import { env } from "@shared/config/env";
+import { connectDB } from "../shared/db";
+import { env } from "../shared/config/env";
 
 const PORT = env.PORT || 8000;
 

@@ -92,9 +92,6 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-// Indexes for performance
-userSchema.index({ email: 1 }); // Index for login queries
-
 // Pre save hook for password hashing
 userSchema.pre("save", async function (next) {
   // Runs if password is modified

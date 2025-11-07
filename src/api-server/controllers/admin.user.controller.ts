@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { User, RefreshToken } from "../../shared/models";
 import mongoose from "mongoose";
 import { paginate } from "../../shared/utils/helper";
-import { sanitizeInput } from "@shared/utils/sanitizer";
+import { sanitizeInput } from "../../shared/utils/sanitizer";
 
 // Get All Users
 // GET /api/v1/admin/users

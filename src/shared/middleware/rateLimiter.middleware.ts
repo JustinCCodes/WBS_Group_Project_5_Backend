@@ -38,3 +38,12 @@ export const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+export const contactLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 3, // Limits each IP to 3 contact requests per 10 minutes
+  message:
+    "Too many contact form submissions from this IP, please try again after 10 minutes.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { Category, Product } from "../../shared/models";
+import { sanitizeInput } from "../../shared/utils/sanitizer";
 import mongoose from "mongoose";
 
 // Get All Categories (Public endpoint - minimal data)
@@ -47,10 +48,11 @@ export const createCategory = async (
   next: NextFunction
 ) => {
   const { name } = req.body;
+  const sanitizedName = sanitizeInput(name);
 
   try {
     // Escapes regex special characters to prevent NoSQL injection
-    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const escapedName = sanitizedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     // Checks if category name already exists
     const existingCategory = await Category.findOne({
@@ -63,7 +65,7 @@ export const createCategory = async (
     }
 
     const newCategory = new Category({
-      name,
+      name: sanitizedName,
       createdBy: req.user?.id,
     });
     await newCategory.save();
@@ -86,10 +88,11 @@ export const updateCategory = async (
 ) => {
   const { id } = req.params;
   const { name } = req.body;
+  const sanitizedName = sanitizeInput(name);
 
   try {
     // Escapes regex special characters to prevent NoSQL injection
-    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const escapedName = sanitizedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     // Checks if new name already exists for another category
     const existingCategory = await Category.findOne({
@@ -104,7 +107,7 @@ export const updateCategory = async (
 
     const updatedCategory = await Category.findByIdAndUpdate(
       id,
-      { name },
+      { name: sanitizedName },
       { new: true, runValidators: true } // Returns updated doc runs schema validation
     );
 

@@ -275,6 +275,13 @@ Base URL: `http://localhost:8000/api/v1`
 - **Input Validation**: Zod schema validation on all endpoints
 - **CORS**: Configured with credentials support
 
+### XSS Protection
+
+- All user-facing text fields (e.g., names, descriptions, messages) are sanitized server-side using a custom sanitizer utility to escape HTML special characters and prevent cross-site scripting (XSS) attacks.
+- Only text fields are sanitized; IDs, numbers, and other non-display fields are validated but not sanitized.
+- See `src/shared/utils/sanitizer.ts` for implementation details.
+- Sanitization is applied in all relevant controllers (e.g., user, product, category, contact).
+
 ### User Ban System
 
 Administrators can ban and unban users with the following features:

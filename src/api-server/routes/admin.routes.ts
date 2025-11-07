@@ -2,6 +2,7 @@ import { Router } from "express";
 import * as adminUserController from "../controllers/admin.user.controller";
 import * as adminOrderController from "../controllers/admin.order.controller";
 import * as adminCategoryController from "../controllers/admin.category.controller";
+import * as adminContactController from "../controllers/admin.contact.controller";
 import * as adminProductController from "../controllers/admin.product.controller";
 import { validateRequest, requireAuth, isAdmin } from "../../shared/middleware";
 import requireCsrfToken from "../../shared/middleware/csrf.middleware";
@@ -21,6 +22,7 @@ import {
   unfeatureProductSchema,
   updateStockSchema,
   getLowStockSchema,
+  paramsWithIdSchema,
 } from "../../shared/schemas";
 
 const router = Router();
@@ -121,6 +123,21 @@ router.get(
   "/products/low-stock",
   validateRequest(getLowStockSchema),
   adminProductController.getLowStockProducts
+);
+
+// Admin Contact Message Management (NEW)
+router.get("/messages", adminContactController.getAllMessages);
+router.put(
+  "/messages/:id",
+  validateRequest(paramsWithIdSchema),
+  requireCsrfToken,
+  adminContactController.markMessageAsRead
+);
+router.delete(
+  "/messages/:id",
+  validateRequest(paramsWithIdSchema),
+  requireCsrfToken,
+  adminContactController.deleteMessage
 );
 
 export default router;

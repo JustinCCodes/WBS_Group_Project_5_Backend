@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { Product, Category, Order } from "../../shared/models";
 import mongoose from "mongoose";
 import { paginate, deleteImageFromCloudinary } from "../../shared/utils/helper";
+import { sanitizeInput } from "@shared/utils/sanitizer";
 
 // Get All Products
 // GET /api/v1/products
@@ -99,9 +100,16 @@ export const createProduct = async (
         .json({ error: `Category with ID ${categoryId} does not exist.` });
     }
 
+    // Sanitizes only text fields
+    const sanitizedName = typeof name === "string" ? sanitizeInput(name) : name;
+    const sanitizedDescription =
+      typeof description === "string"
+        ? sanitizeInput(description)
+        : description;
+
     const newProduct = new Product({
-      name,
-      description,
+      name: sanitizedName,
+      description: sanitizedDescription,
       price,
       stock: stock !== undefined ? stock : 0, // Uses provided stock or default to 0
       categoryId,
@@ -135,7 +143,16 @@ export const updateProduct = async (
   const { id } = req.params;
   // Uses validated body if available (from validation middleware)
   const validatedBody = (req as any).validated?.body || req.body;
-  const updates = validatedBody;
+  const updates = { ...validatedBody };
+
+  // Sanitize only text fields if present
+  const { sanitizeInput } = require("../../shared/utils/sanitizer");
+  if (typeof updates.name === "string") {
+    updates.name = sanitizeInput(updates.name);
+  }
+  if (typeof updates.description === "string") {
+    updates.description = sanitizeInput(updates.description);
+  }
 
   try {
     // If categoryId is being updated checks if it exists

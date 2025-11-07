@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { User, RefreshToken } from "../../shared/models";
 import mongoose from "mongoose";
 import { paginate } from "../../shared/utils/helper";
+import { sanitizeInput } from "@shared/utils/sanitizer";
 
 // Get All Users
 // GET /api/v1/admin/users
@@ -83,7 +84,7 @@ export const updateUser = async (
     }
 
     // Updates fields if provided
-    if (name) userToUpdate.name = name;
+    if (name) userToUpdate.name = sanitizeInput(name);
     if (role) userToUpdate.role = role;
     // Admins cannot change password via this endpoint for security (might need to add reset password options later)
 
@@ -148,7 +149,7 @@ export const banUser = async (
 
     // Updates user status
     user.status = "banned";
-    user.bannedReason = reason;
+    user.bannedReason = sanitizeInput(reason);
     if (bannedUntil) {
       user.bannedUntil = new Date(bannedUntil);
     }

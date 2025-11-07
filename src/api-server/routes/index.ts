@@ -4,6 +4,7 @@ import productRouter from "./product.routes";
 import orderRouter from "./order.routes";
 import adminRouter from "./admin.routes";
 import healthRouter from "./health.routes";
+import contactRouter from "./contact.routes";
 
 export {
   userRouter,
@@ -12,4 +13,5 @@ export {
   orderRouter,
   adminRouter,
   healthRouter,
+  contactRouter,
 };

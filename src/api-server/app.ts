@@ -10,6 +10,7 @@ import {
   orderRouter,
   adminRouter,
   healthRouter,
+  contactRouter,
 } from "./routes";
 import { authRouter } from "../auth-server/routes";
 
@@ -71,6 +72,7 @@ app.use(`${apiBasePath}/categories`, categoryRouter);
 app.use(`${apiBasePath}/products`, productRouter);
 app.use(`${apiBasePath}/orders`, orderRouter);
 app.use(`${apiBasePath}/admin`, adminRouter);
+app.use(`${apiBasePath}/contact`, contactRouter);
 
 // Global Error Handler
 app.use(errorHandler);

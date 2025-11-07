@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { User, RefreshToken } from "../../shared/models";
 import { clearAuthCookies } from "../../shared/utils/helper";
+import { sanitizeInput } from "../../shared/utils/sanitizer";
 
 // Register User
 // POST /api/v1/users
@@ -20,8 +21,8 @@ export const registerUser = async (
 
     // Creates new user (password hashing is in pre-save hook in model)
     const newUser = new User({
-      name,
-      email,
+      name: sanitizeInput(name),
+      email: sanitizeInput(email),
       password,
       // role defaults to 'user' as in schema
     });
@@ -87,14 +88,14 @@ export const updateCurrentUser = async (
 
     // Updates other allowed fields
     if (updates.name) {
-      userToUpdate.name = updates.name;
+      userToUpdate.name = sanitizeInput(updates.name); // Sanitizes name input
     }
     if (updates.password) {
-      // Assignes new password triggers pre-save hook to hash it
+      // Assignes new password triggers pre save hook to hash it
       userToUpdate.password = updates.password;
     }
 
-    // Saves updated user triggers pre-save hook if password changed
+    // Saves updated user triggers pre save hook if password changed
     const updatedUser = await userToUpdate.save();
 
     // Sends back updated user password excluded by toJSON

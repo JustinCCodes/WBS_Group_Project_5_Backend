@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { Product, Category, Order } from "../../shared/models";
 import mongoose from "mongoose";
 import { paginate, deleteImageFromCloudinary } from "../../shared/utils/helper";
-import { sanitizeInput } from "@shared/utils/sanitizer";
+import { sanitizeInput } from "../../shared/utils/sanitizer";
 
 // Get All Products
 // GET /api/v1/products

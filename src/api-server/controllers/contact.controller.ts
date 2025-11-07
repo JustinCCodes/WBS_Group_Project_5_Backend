@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ContactMessage } from "../../shared/models";
 import { sanitizeInput } from "../../shared/utils/sanitizer";
+import { encrypt } from "../../shared/utils/encryption";
 
 // Create Message
 // POST /api/v1/contact
@@ -17,11 +18,16 @@ export const createMessage = async (
     const sanitizedEmail = sanitizeInput(email); // Also sanitizes email just in case
     const sanitizedMessage = sanitizeInput(message);
 
-    // Creates and saves the sanitized message
+    // Encrypt the sensitive fields
+    const encryptedMessage = encrypt(sanitizedMessage);
+    const encryptedName = encrypt(sanitizedName);
+    const encryptedEmail = encrypt(sanitizedEmail);
+
+    // Save the encrypted data
     const newMessage = new ContactMessage({
-      name: sanitizedName,
-      email: sanitizedEmail,
-      message: sanitizedMessage,
+      name: encryptedName,
+      email: encryptedEmail,
+      message: encryptedMessage,
     });
 
     await newMessage.save();

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ContactMessage } from "../../shared/models";
 import { paginate } from "../../shared/utils/helper";
+import { decrypt } from "../../shared/utils/encryption";
 
 // Get All Messages (Admin)
 // GET /api/v1/admin/messages
@@ -25,8 +26,19 @@ export const getAllMessages = async (
 
     const totalMessages = await ContactMessage.countDocuments(queryFilter);
 
+    // Decrypts the messages before sending
+    const decryptedMessages = messages.map((msg) => {
+      const msgObject = msg.toObject();
+      return {
+        ...msgObject,
+        name: decrypt(msg.name),
+        email: decrypt(msg.email),
+        message: decrypt(msg.message),
+      };
+    });
+
     res.status(200).json({
-      data: messages,
+      data: decryptedMessages, // Sends decrypted data
       pagination: pagination.metadata(totalMessages),
     });
   } catch (error) {
@@ -52,7 +64,15 @@ export const markMessageAsRead = async (
     message.read = true;
     await message.save();
 
-    res.status(200).json(message);
+    const msgObject = message.toObject();
+    const decryptedMessage = {
+      ...msgObject,
+      name: decrypt(msgObject.name),
+      email: decrypt(msgObject.email),
+      message: decrypt(msgObject.message),
+    };
+
+    res.status(200).json(decryptedMessage); // Sends decrypted data
   } catch (error) {
     next(error);
   }

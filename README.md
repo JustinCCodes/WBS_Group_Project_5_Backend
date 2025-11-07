@@ -36,6 +36,7 @@ The `dev:all` script starts all services simultaneously for integrated developme
 - **Advanced User Search**: Search users by email or ID with pagination
 - **CSRF Protection**: CSRF token validation on all state-changing operations
 - **Security**: Rate limiting, input validation, secure cookies, password hashing, banned user checks
+- **Contact Message Encryption**: All contact form messages are encrypted at rest and decrypted only for authorized admin viewing, ensuring privacy and security.
 - **Serverless Ready**: Optimized for Vercel with connection pooling and caching
 - **TypeScript**: Fully typed with strict mode enabled
 - **Input Validation**: Zod schemas for all endpoints
@@ -85,7 +86,7 @@ Edit `.env` and fill in your values:
 # Application
 NODE_ENV=development
 PORT=8000                # Main API server port
-AUTH_PORT=8001          # Authentication server port
+AUTH_PORT=8001           # Authentication server port
 CORS_ORIGIN=http://localhost:3000             # Customer frontend URL for CORS
 ADMIN_CORS_ORIGIN=http://localhost:3002       # Admin dashboard URL for CORS
 
@@ -103,11 +104,14 @@ JWT_REFRESH_COOKIE_MAX_AGE=604800000  # 7 days in milliseconds
 CLOUDINARY_CLOUD_NAME="your_cloudinary_cloud_name"
 CLOUDINARY_API_KEY="your_cloudinary_api_key"
 CLOUDINARY_API_SECRET="your_cloudinary_api_secret"
+
+# Contact Message Encryption
+MESSAGE_ENCRYPTION_KEY="your_new_32_character_secret_key_here"
 ```
 
 **Important Notes:**
 
-- `JWT_SECRET` must be at least 32 characters for security
+- `JWT_SECRET` and `MESSAGE_ENCRYPTION_KEY` must be at least 32 characters for security
 - Cloudinary credentials are required for product image management
 - `ADMIN_CORS_ORIGIN` is required for the admin dashboard to communicate with the API
 - Tauri desktop app uses `tauri://localhost` origin (automatically configured)
@@ -281,6 +285,12 @@ Base URL: `http://localhost:8000/api/v1`
 - Only text fields are sanitized; IDs, numbers, and other non-display fields are validated but not sanitized.
 - See `src/shared/utils/sanitizer.ts` for implementation details.
 - Sanitization is applied in all relevant controllers (e.g., user, product, category, contact).
+
+### Contact Message Encryption
+
+- All contact form messages are encrypted before being stored in the database and decrypted only for authorized admin viewing.
+- Encryption and decryption are handled in `src/shared/utils/encryption.ts`.
+- This ensures that sensitive user messages remain private and secure, even if the database is compromised.
 
 ### User Ban System
 
@@ -473,72 +483,80 @@ ecommerce-backend/
 │   └── index.ts                    # Vercel serverless entry point
 ├── src/
 │   ├── app.ts                      # Shared app configuration
-│   ├── api-server/                 # Main API Server
+│   ├── api-server/
 │   │   ├── app.ts                  # API server Express app
 │   │   ├── server.ts               # API server entry point
-│   │   ├── controllers/            # Business logic controllers
-│   │   │   ├── admin.category.controller.ts   # Admin category operations
-│   │   │   ├── admin.order.controller.ts      # Admin order management
-│   │   │   ├── admin.product.controller.ts    # Featured products & stock management
-│   │   │   ├── admin.testOrder.controller.ts  # Test order operations
-│   │   │   ├── admin.user.controller.ts       # User management & banning
-│   │   │   ├── category.controller.ts         # Public category endpoints
-│   │   │   ├── order.controller.ts            # User order operations
-│   │   │   ├── product.controller.ts          # Product CRUD with Cloudinary
-│   │   │   └── user.controller.ts             # User registration & profile
-│   │   └── routes/                 # API route definitions
-│   │       ├── admin.routes.ts                # All admin endpoints
-│   │       ├── category.routes.ts
-│   │       ├── index.ts
-│   │       ├── order.routes.ts
-│   │       ├── product.routes.ts
-│   │       └── user.routes.ts
-│   ├── auth-server/                # Authentication Server
-│   │   ├── app.ts                  # Auth server Express app
-│   │   ├── server.ts               # Auth server entry point
 │   │   ├── controllers/
-│   │   │   └── auth.controller.ts  # Login, refresh, logout logic
-│   │   └── routes/
-│   │       ├── auth.routes.ts      # Auth route definitions
-│   │       └── index.ts
-│   └── shared/                     # Shared resources between servers
-│       ├── config/
-│       │   ├── cloudinary.ts       # Cloudinary configuration
-│       │   └── env.ts              # Environment validation (Zod)
-│       ├── db/
-│       │   └── index.ts            # MongoDB connection with pooling
-│       ├── middleware/             # Custom middleware
-│       │   ├── auth.middleware.ts          # JWT validation & ban checks
-│       │   ├── csrf.middleware.ts          # CSRF token validation
-│       │   ├── errorHandler.middleware.ts  # Global error handler
-│       │   ├── index.ts
-│       │   ├── rateLimiter.middleware.ts   # Rate limiting configs
-│       │   └── validateRequest.middleware.ts # Zod validation
-│       ├── models/                 # Mongoose models
-│       │   ├── category.model.ts   # Category with createdBy
-│       │   ├── index.ts
-│       │   ├── order.model.ts      # Production orders
-│       │   ├── product.model.ts    # Products with featured & stock
-│       │   ├── refreshToken.model.ts # JWT refresh tokens
-│       │   ├── testOrder.model.ts  # Test orders collection
-│       │   └── user.model.ts       # Users with ban functionality
-│       ├── schemas/                # Zod validation schemas
-│       │   ├── auth.schema.ts      # Login, refresh schemas
-│       │   ├── category.schema.ts  # Category validation
-│       │   ├── common.schema.ts    # Shared schemas (pagination, etc.)
-│       │   ├── index.ts
-│       │   ├── order.schema.ts     # Order & test order schemas
-│       │   ├── product.schema.ts   # Product CRUD & admin schemas
-│       │   └── user.schema.ts      # User, ban, search schemas
-│       └── utils/                  # Helper functions
-│           └── helper.ts           # Cloudinary delete, pagination
-├── .env.example                    # Environment variables template
-├── .gitignore                      # Git ignore rules
-├── .vercelignore                   # Vercel ignore rules
-├── AUTH_SERVER.md                  # Detailed auth server documentation
-├── package.json                    # Dependencies & dev scripts
-├── tsconfig.json                   # TypeScript configuration
-└── vercel.json                     # Vercel serverless configuration
+│   │   │   ├── admin.category.controller.ts
+│   │   │   ├── admin.contact.controller.ts
+│   │   │   ├── admin.order.controller.ts
+│   │   │   ├── admin.product.controller.ts
+│   │   │   ├── admin.user.controller.ts
+│   │   │   ├── category.controller.ts
+│   │   │   ├── contact.controller.ts
+│   │   │   ├── order.controller.ts
+│   │   │   ├── product.controller.ts
+│   │   │   └── user.controller.ts
+│   │   ├── routes/
+│   │   │   ├── admin.routes.ts
+│   │   │   ├── category.routes.ts
+│   │   │   ├── contact.routes.ts
+│   │   │   ├── health.routes.ts
+│   │   │   ├── index.ts
+│   │   │   ├── order.routes.ts
+│   │   │   ├── product.routes.ts
+│   │   │   └── user.routes.ts
+│   ├── auth-server/
+│   │   ├── app.ts
+│   │   ├── controllers/
+│   │   │   └── auth.controller.ts
+│   │   ├── routes/
+│   │   │   ├── auth.routes.ts
+│   │   │   └── index.ts
+│   │   ├── server.ts
+│   ├── shared/
+│   │   ├── config/
+│   │   │   ├── cloudinary.ts
+│   │   │   └── env.ts
+│   │   ├── db/
+│   │   │   └── index.ts
+│   │   ├── middleware/
+│   │   │   ├── auth.middleware.ts
+│   │   │   ├── csrf.middleware.ts
+│   │   │   ├── errorHandler.middleware.ts
+│   │   │   ├── index.ts
+│   │   │   ├── rateLimiter.middleware.ts
+│   │   │   └── validateRequest.middleware.ts
+│   │   ├── models/
+│   │   │   ├── category.model.ts
+│   │   │   ├── contactMessage.model.ts
+│   │   │   ├── index.ts
+│   │   │   ├── order.model.ts
+│   │   │   ├── product.model.ts
+│   │   │   ├── refreshToken.model.ts
+│   │   │   ├── testOrder.model.ts
+│   │   │   └── user.model.ts
+│   │   ├── schemas/
+│   │   │   ├── auth.schema.ts
+│   │   │   ├── category.schema.ts
+│   │   │   ├── common.schema.ts
+│   │   │   ├── contact.schema.ts
+│   │   │   ├── index.ts
+│   │   │   ├── order.schema.ts
+│   │   │   ├── product.schema.ts
+│   │   │   └── user.schema.ts
+│   │   ├── utils/
+│   │   │   ├── encryption.ts
+│   │   │   ├── helper.ts
+│   │   │   └── sanitizer.ts
+├── .env.example
+├── .gitignore
+├── .vercelignore
+├── AUTH_SERVER.md
+├── package.json
+├── package-lock.json
+├── tsconfig.json
+└── vercel.json
 ```
 
 ## 📚 Additional Documentation

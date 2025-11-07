@@ -32,6 +32,11 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
+
+  // Message Encryption
+  MESSAGE_ENCRYPTION_KEY: z
+    .string()
+    .length(32, "MESSAGE_ENCRYPTION_KEY must be exactly 32 characters long"),
 });
 
 // Parses and validates environment variables

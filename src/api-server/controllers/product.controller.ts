@@ -4,6 +4,17 @@ import mongoose from "mongoose";
 import { paginate, deleteImageFromCloudinary } from "../../shared/utils/helper";
 import { sanitizeInput } from "../../shared/utils/sanitizer";
 
+// Shared interface for product body validation
+interface ProductBody {
+  name?: string;
+  description?: string;
+  price?: number;
+  stock?: number;
+  categoryId?: string;
+  imageUrl?: string;
+  imagePublicId?: string;
+}
+
 // Get All Products
 // GET /api/v1/products
 export const getAllProducts = async (
@@ -12,8 +23,16 @@ export const getAllProducts = async (
   next: NextFunction
 ) => {
   try {
-    // Uses validated query params if available (from validation middleware)
-    const validatedQuery = (req as any).validated?.query || req.query;
+    // Uses validated query params if available
+    interface ProductQuery {
+      categoryId?: string;
+      featured?: boolean;
+      page?: number | string;
+      limit?: number | string;
+    }
+    const validatedQuery =
+      (req as Request & { validated?: { query?: ProductQuery } }).validated
+        ?.query || req.query;
     const { categoryId, featured, page = 1, limit = 10 } = validatedQuery;
 
     const queryFilter: { categoryId?: string; featured?: boolean } = {};
@@ -79,8 +98,9 @@ export const createProduct = async (
   res: Response,
   next: NextFunction
 ) => {
-  // Uses validated body if available (from validation middleware)
-  const validatedBody = (req as any).validated?.body || req.body;
+  const validatedBody =
+    (req as Request & { validated?: { body?: ProductBody } }).validated?.body ||
+    req.body;
   const {
     name,
     description,
@@ -141,8 +161,9 @@ export const updateProduct = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
-  // Uses validated body if available (from validation middleware)
-  const validatedBody = (req as any).validated?.body || req.body;
+  const validatedBody =
+    (req as Request & { validated?: { body?: ProductBody } }).validated?.body ||
+    req.body;
   const updates = { ...validatedBody };
 
   // Sanitize only text fields if present

@@ -213,7 +213,7 @@ export const searchUsers = async (
   const { email, id, page = 1, limit = 10 } = req.query;
 
   try {
-    const query: any = {};
+    const query: Record<string, unknown> = {};
 
     // Searches by email (case-insensitive partial match)
     if (email && typeof email === "string") {

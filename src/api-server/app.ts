@@ -11,6 +11,7 @@ import {
   adminRouter,
   healthRouter,
   contactRouter,
+  addressRouter,
 } from "./routes";
 import { authRouter } from "../auth-server/routes";
 
@@ -73,6 +74,7 @@ app.use(`${apiBasePath}/products`, productRouter);
 app.use(`${apiBasePath}/orders`, orderRouter);
 app.use(`${apiBasePath}/admin`, adminRouter);
 app.use(`${apiBasePath}/contact`, contactRouter);
+app.use(`${apiBasePath}/addresses`, addressRouter);
 
 // Global Error Handler
 app.use(errorHandler);

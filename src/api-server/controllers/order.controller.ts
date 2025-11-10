@@ -42,7 +42,7 @@ export const createOrder = async (
     // Populates necessary fields for the response
     const populatedOrder = await Order.findById(newOrder._id)
       .populate("userId", "name email") // Populates user details
-      .populate("products.productId", "name price"); // Populates product details
+      .populate("products.productId", "name price imageUrl"); // Populates product details
 
     res.status(201).json(populatedOrder);
   } catch (error) {
@@ -82,7 +82,7 @@ export const getUserOrders = async (
     const pagination = paginate(Number(page), Number(limit));
 
     const orders = await Order.find({ userId: userId })
-      .populate("products.productId", "name price") // Populates product details
+      .populate("products.productId", "name price imageUrl") // Populates product details
       .limit(pagination.limit)
       .skip(pagination.skip)
       .sort({ createdAt: -1 }); // Sorts by newest first
@@ -114,7 +114,7 @@ export const getOrderById = async (
   try {
     const order = await Order.findById(orderId)
       .populate("userId", "name email")
-      .populate("products.productId", "name price");
+      .populate("products.productId", "name price imageUrl");
 
     if (!order) {
       return res.status(404).json({ error: "Order not found." });
@@ -124,8 +124,9 @@ export const getOrderById = async (
     const orderUserId =
       typeof order.userId === "object" &&
       order.userId !== null &&
-      "_id" in order.userId
-        ? (order.userId as any)._id.toString()
+      "_id" in order.userId &&
+      order.userId._id instanceof mongoose.Types.ObjectId
+        ? order.userId._id.toString()
         : order.userId.toString();
 
     if (orderUserId !== userId) {
@@ -186,7 +187,7 @@ export const updateOrder = async (
     // Populates for response
     const populatedOrder = await Order.findById(updatedOrder._id)
       .populate("userId", "name email")
-      .populate("products.productId", "name price");
+      .populate("products.productId", "name price imageUrl");
 
     res.status(200).json(populatedOrder);
   } catch (error) {

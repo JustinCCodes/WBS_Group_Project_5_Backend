@@ -480,12 +480,12 @@ Or push to GitHub and enable automatic deployments in Vercel.
 ```
 ecommerce-backend/
 ├── api/
-│   └── index.ts                    # Vercel serverless entry point
+│   └── index.ts
 ├── src/
-│   ├── app.ts                      # Shared app configuration
+│   ├── app.ts
 │   ├── api-server/
-│   │   ├── app.ts                  # API server Express app
-│   │   ├── server.ts               # API server entry point
+│   │   ├── app.ts
+│   │   ├── server.ts
 │   │   ├── controllers/
 │   │   │   ├── admin.category.controller.ts
 │   │   │   ├── admin.contact.controller.ts
@@ -534,7 +534,6 @@ ecommerce-backend/
 │   │   │   ├── order.model.ts
 │   │   │   ├── product.model.ts
 │   │   │   ├── refreshToken.model.ts
-│   │   │   ├── testOrder.model.ts
 │   │   │   └── user.model.ts
 │   │   ├── schemas/
 │   │   │   ├── auth.schema.ts
@@ -558,6 +557,10 @@ ecommerce-backend/
 ├── tsconfig.json
 └── vercel.json
 ```
+
+### 🤖 Bot Protection
+
+The contact form uses a honeypot field (`honeypot`) to detect and block automated bot submissions. If this hidden field is filled, the request is rejected as a bot. See `src/shared/schemas/contact.schema.ts` for implementation details.
 
 ## 📚 Additional Documentation
 

@@ -13,6 +13,7 @@ export interface IUser extends Document {
   failedLoginAttempts?: number; // Failed login attempts
   lockUntil?: Date; // When the account is unlocked
   lastFailedLogin?: Date; // When the last failed login attempt occurred
+  defaultAddress?: Schema.Types.ObjectId; // Default address ID
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -69,24 +70,27 @@ const userSchema = new Schema<IUser>(
       type: Date, // When the last failed login attempt occurred
       required: false, // Optional
     },
+    defaultAddress: {
+      type: Schema.Types.ObjectId,
+      ref: "Address",
+      required: false,
+    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields
     toJSON: {
       virtuals: true, // Ensures password is not returned in toJSON calls
       transform: (doc, ret) => {
-        ret.id = ret._id; // Maps _id to id
-        delete ret._id; // Removes _id
-        delete ret.password; // Removes password
+        const { _id, password, __v, ...rest } = ret;
+        return { id: _id, ...rest };
       },
     },
     // Ensures password is not returned in toObject calls
     toObject: {
       virtuals: true, // Ensures virtuals are included
       transform: (doc, ret) => {
-        ret.id = ret._id; // Maps _id to id
-        delete ret._id; // Removes _id
-        delete ret.password; // Removes password
+        const { _id, password, __v, ...rest } = ret;
+        return { id: _id, ...rest };
       },
     },
   }

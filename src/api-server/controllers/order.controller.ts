@@ -6,6 +6,7 @@ import {
   paginate,
   validateAndDecreaseStock,
   restoreStock,
+  getNextSequenceValue,
 } from "../../shared/utils/helper";
 
 // Create Order
@@ -28,12 +29,19 @@ export const createOrder = async (
     // Calculates total server side (also validates product IDs)
     const calculatedTotal = await calculateOrderTotal(products);
 
+    // Generates unique order number and sequence
+    const sequenceValue = await getNextSequenceValue("orderId");
+    const orderSequence = 1000 + sequenceValue;
+    const orderNumber = `SYNTAX-${orderSequence}`;
+
     // Creates new order document
     const newOrder = new Order({
       userId,
       products,
       total: calculatedTotal,
       status: "pending", // Default status
+      orderNumber,
+      orderSequence,
     });
 
     // Saves the order
@@ -216,41 +224,45 @@ export const deleteOrder = async (
   const { id: orderId } = req.params;
 
   try {
-    const orderToDelete = await Order.findById(orderId);
+    const orderToCancel = await Order.findById(orderId);
 
-    if (!orderToDelete) {
+    if (!orderToCancel) {
       return res.status(404).json({ error: "Order not found." });
     }
 
     // Authorization check
-    if (orderToDelete.userId.toString() !== userId) {
+    if (orderToCancel.userId.toString() !== userId) {
       return res
         .status(403)
         .json({ error: "Forbidden. You do not own this order." });
     }
 
-    if (
-      orderToDelete.status !== "pending" &&
-      orderToDelete.status !== "cancelled"
-    ) {
+    // Only pending orders can be cancelled by the user
+    if (orderToCancel.status !== "pending") {
       return res.status(400).json({
-        error: `Cannot delete order with status '${orderToDelete.status}'.`,
+        error: `Only pending orders can be cancelled. Status is '${orderToCancel.status}'.`,
       });
     }
 
-    // Restore stock before deleting order (only if order was not cancelled as cancelled orders already restored stock)
-    if (orderToDelete.status !== "cancelled") {
-      await restoreStock(
-        orderToDelete.products as unknown as {
-          productId: string | mongoose.Types.ObjectId;
-          quantity: number;
-        }[]
-      );
-    }
+    // Update status to 'cancelled'
+    orderToCancel.status = "cancelled";
 
-    await Order.findByIdAndDelete(orderId);
+    // Restore stock
+    await restoreStock(
+      orderToCancel.products as unknown as {
+        productId: string | mongoose.Types.ObjectId;
+        quantity: number;
+      }[]
+    );
 
-    res.status(204).send();
+    await orderToCancel.save();
+
+    // Populate and return the updated (cancelled) order
+    const populatedOrder = await Order.findById(orderToCancel._id)
+      .populate("userId", "name email")
+      .populate("products.productId", "name price imageUrl");
+
+    res.status(200).json(populatedOrder);
   } catch (error) {
     next(error);
   }

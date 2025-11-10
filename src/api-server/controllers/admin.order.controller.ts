@@ -155,23 +155,62 @@ export const deleteOrder = async (
   const { id } = req.params;
 
   try {
-    const orderToDelete = await Order.findById(id);
+    const orderToCancel = await Order.findById(id);
 
-    if (!orderToDelete) {
+    if (!orderToCancel) {
       return res.status(404).json({ error: "Order not found." });
     }
 
-    // Restore stock before deleting (only if not cancelled)
-    if (orderToDelete.status !== "cancelled") {
-      await restoreStock(
-        orderToDelete.products as unknown as {
-          productId: string | mongoose.Types.ObjectId;
-          quantity: number;
-        }[]
-      );
+    // If already cancelled just return it
+    if (orderToCancel.status === "cancelled") {
+      const populatedOrder = await Order.findById(orderToCancel._id)
+        .populate("userId", "name email")
+        .populate("products.productId", "name price");
+      return res.status(200).json(populatedOrder);
     }
 
-    await Order.findByIdAndDelete(id);
+    // Restore stock before cancelling
+    await restoreStock(
+      orderToCancel.products as unknown as {
+        productId: string | mongoose.Types.ObjectId;
+        quantity: number;
+      }[]
+    );
+
+    orderToCancel.status = "cancelled";
+    await orderToCancel.save();
+
+    // Populates and returns
+    const populatedOrder = await Order.findById(orderToCancel._id)
+      .populate("userId", "name email")
+      .populate("products.productId", "name price");
+
+    res.status(200).json(populatedOrder);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Hard Delete Order (Admin)
+// DELETE /api/v1/admin/orders/:id/permanent
+export const hardDeleteOrder = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+
+  try {
+    const deletedOrder = await Order.findByIdAndDelete(id);
+
+    if (!deletedOrder) {
+      return res.status(404).json({ error: "Order not found." });
+    }
+
+    // No restore stock here
+    // This is a permanent data purge not a cancellation
+    // Stock should have been restored when the order was 'cancelled' (soft-deleted) first
+
     res.status(204).send();
   } catch (error) {
     next(error);

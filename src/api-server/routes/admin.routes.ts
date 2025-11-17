@@ -14,6 +14,7 @@ import {
   adminGetOrdersSchema,
   getOrderSchema,
   deleteOrderSchema,
+  hardDeleteOrderSchema,
   banUserSchema,
   unbanUserSchema,
   searchUsersSchema,
@@ -98,6 +99,14 @@ router.delete(
   adminOrderController.deleteOrder
 );
 
+// Hard delete (permanent)
+router.delete(
+  "/orders/:id/permanent",
+  validateRequest(hardDeleteOrderSchema),
+  requireCsrfToken,
+  adminOrderController.hardDeleteOrder
+);
+
 // Admin Product Management - Featured Products
 router.put(
   "/products/:id/feature",
@@ -125,7 +134,7 @@ router.get(
   adminProductController.getLowStockProducts
 );
 
-// Admin Contact Message Management (NEW)
+// Admin Contact Message Management
 router.get("/messages", adminContactController.getAllMessages);
 router.put(
   "/messages/:id",

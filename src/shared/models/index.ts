@@ -6,6 +6,7 @@ import Order from "./order.model";
 import RefreshToken from "./refreshToken.model";
 import ContactMessage from "./contactMessage.model";
 import Address from "./address.model";
+import Counter from "./counter.model";
 
 // Imports interfaces
 import { IUser } from "./user.model";
@@ -15,6 +16,7 @@ import { IOrder } from "./order.model";
 import { IRefreshToken } from "./refreshToken.model";
 import { IContactMessage } from "./contactMessage.model";
 import type { IAddress } from "./address.model";
+import { ICounter } from "./counter.model";
 
 // Exports models and interfaces
 export {
@@ -25,6 +27,7 @@ export {
   RefreshToken,
   ContactMessage,
   Address,
+  Counter,
 };
 export type {
   IUser,
@@ -34,4 +37,5 @@ export type {
   IRefreshToken,
   IContactMessage,
   IAddress,
+  ICounter,
 };

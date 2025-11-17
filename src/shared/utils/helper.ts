@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { Product, RefreshToken } from "../models";
+import { Counter, Product, RefreshToken } from "../models";
 import { Response } from "express";
 import { env } from "../config/env";
 import bcrypt from "bcryptjs";
@@ -288,4 +288,16 @@ export const deleteMultipleImagesFromCloudinary = async (
     deleteImageFromCloudinary(publicId)
   );
   await Promise.all(deletePromises);
+};
+
+// Atomically finds and increments a sequence counter in the database
+export const getNextSequenceValue = async (
+  sequenceName: string
+): Promise<number> => {
+  const counter = await Counter.findOneAndUpdate(
+    { _id: sequenceName },
+    { $inc: { sequence_value: 1 } },
+    { new: true, upsert: true } // Create document if it doesn't exist
+  );
+  return counter.sequence_value;
 };

@@ -49,6 +49,11 @@ export const deleteOrderSchema = z.object({
   params: paramsWithIdSchema,
 });
 
+// Schema for PERMANENTLY deleting an order (hard delete, admin only)
+export const hardDeleteOrderSchema = z.object({
+  params: paramsWithIdSchema,
+});
+
 // Schema for user getting their own orders
 export const getOrdersSchema = z.object({
   query: paginationQuerySchema.partial(), // Makes query params optional

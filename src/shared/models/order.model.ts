@@ -12,6 +12,8 @@ export interface IOrder extends Document {
   products: IOrderProduct[]; // List of products in the order
   total: number; // Total amount for the order
   status: "pending" | "processing" | "shipped" | "cancelled"; // Order status
+  orderNumber: string; // Unique order number
+  orderSequence: number; // Sequential order number
 }
 
 // Schema
@@ -47,6 +49,18 @@ const orderSchema = new Schema<IOrder>(
       enum: ["pending", "processing", "shipped", "cancelled"], // Allowed values
       default: "pending", // Default status
     },
+    orderNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+    orderSequence: {
+      type: Number,
+      required: true,
+      unique: true,
+      index: true,
+    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields
@@ -71,6 +85,7 @@ const orderSchema = new Schema<IOrder>(
 orderSchema.index({ userId: 1, createdAt: -1 }); // Compound index for users orders sorted by date
 orderSchema.index({ status: 1 }); // Index for filtering by status
 orderSchema.index({ "products.productId": 1 }); // Index for checking product usage
+orderSchema.index({ orderSequence: -1 }); // Index for sorting by order sequence
 
 // Model
 const Order = model<IOrder>("Order", orderSchema);

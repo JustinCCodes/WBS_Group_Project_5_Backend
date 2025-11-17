@@ -122,7 +122,7 @@ export const login = async (
     // Sends tokens via cookies
     sendTokens(res, accessToken, refreshToken);
 
-    // If request indicates a desktop grant, verify it's from admin and return access token
+    // If request indicates a desktop grant, verify it's from admin and return access token and refresh token in JSON
     const grantType = req.body?.grant_type || req.headers["x-grant-type"];
     if (grantType === "desktop") {
       // Only allow desktop grant for admin users
@@ -131,7 +131,9 @@ export const login = async (
           error: "Desktop authentication is only available for admin users",
         });
       }
-      return res.status(200).json({ user: user.toJSON(), accessToken });
+      return res
+        .status(200)
+        .json({ user: user.toJSON(), accessToken, refreshToken });
     }
 
     // Sends user data in response
